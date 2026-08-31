@@ -1,0 +1,7 @@
+// SIBLING SMACKDOWN — a family trivia gameshow hosted by Miki.
+// The entire app (HTML + CSS + game engine + trivia pool) lives in index.html.
+// Edit the QUESTIONS pool there — every question has:
+//   cat (category tag), lead (Miki's banter), q, opts[4], ans (correct index), good, bad
+// Art assets are hosted at user.uploads.dev and referenced from index.html.
+
+kv = {import:kv-plugin}
