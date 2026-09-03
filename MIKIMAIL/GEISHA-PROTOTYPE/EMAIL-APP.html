@@ -1,0 +1,1887 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d0614">
+<title>MIKIMAIL ▸ MOBILE — the email that runs on absolution and a dream</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Ccircle cx='22' cy='22' r='20' fill='%23ff007f'/%3E%3Ccircle cx='22' cy='30' rx='9' ry='7' fill='%230b0512'/%3E%3Ccircle cx='22' cy='15' r='5' fill='%230b0512'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* dark ambient */
+  --bg-deep-black:#0d0614;   /* app/backdrop base */
+  --bg-dark-purple:#1a0b2e;  /* panels */
+  --panel-bg:rgba(26,11,46,.75);
+  /* neon accents */
+  --accent-hot-pink:#ff007f; /* primary pop: buttons, hub, nodes (was yellow) */
+  --accent-fuchsia:#d900ff;  /* secondary accent: borders, glows, web (was blue) */
+  --accent-violet:#8a2be2;   /* web under-layer */
+  /* typography */
+  --text-main:#e6d5f7;       /* main text (was white) */
+  --text-muted:#c4a9e8;      /* muted text (was gray) */
+  --border-glow:rgba(217,0,255,.3);
+  --neon-glow-pink:rgba(255,0,127,.4);
+  /* legacy aliases used throughout the CSS */
+  --blk:#0b0512;
+  --wht:#e6d5f7;
+  --blue:#d900ff;
+  --yellow:#ff007f;
+  --dim:#c4a9e8;
+  --app:#0d0614;
+  --panel:#1a0b2e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:radial-gradient(120% 90% at 50% 0%,#1a0b2e 0%,#0d0614 70%);
+  color:var(--wht);
+  font-family:'Space Mono',monospace;
+  overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+  text-align:left;
+}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+input,textarea{font-family:inherit;touch-action:manipulation}
+::selection{background:var(--yellow);color:var(--blk)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes scrIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes popIn{0%{opacity:0;transform:scale(.55)}70%{opacity:1;transform:scale(1.12)}100%{opacity:1;transform:scale(1)}}
+@keyframes popC{0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}70%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes webArr{0%{opacity:0;transform:scale(.25)}55%{opacity:.9;transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
+@keyframes webBurst{0%{transform:scale(calc(var(--s)*.1)) rotate(calc(var(--r) - 40deg));opacity:0}22%{opacity:1}100%{transform:scale(var(--s)) rotate(calc(var(--r) + 400deg));opacity:0}}
+@keyframes hubPulse{0%,100%{box-shadow:4px 4px 0 rgba(0,0,0,.6),0 0 18px rgba(255,0,127,.25)}50%{box-shadow:4px 4px 0 rgba(0,0,0,.6),0 0 34px rgba(255,0,127,.6)}}
+@keyframes spin360{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ---------- the phone app shell ---------- */
+#mvApp{
+  position:relative;margin:0 auto;
+  width:min(460px,100%);
+  height:100dvh;height:100vh;
+  background:var(--app);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+@media(min-width:520px){
+  body{display:flex;align-items:center;justify-content:center}
+  #mvApp{
+    height:min(880px,calc(100vh - 28px));
+    border-radius:30px;
+    border:3px solid #241040;
+    outline:3px solid rgba(217,0,255,.5);
+    box-shadow:0 0 90px rgba(217,0,255,.22), 18px 18px 0 rgba(217,0,255,.25);
+  }
+}
+.mv-scan{position:absolute;inset:0;z-index:60;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);
+  mix-blend-mode:multiply;opacity:.5}
+.mv-vign{position:absolute;inset:0;z-index:61;pointer-events:none;
+  background:radial-gradient(115% 100% at 50% 45%,transparent 58%,rgba(0,0,0,.5) 100%)}
+
+/* status strip */
+.mv-status{
+  flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;
+  padding:calc(10px + env(safe-area-inset-top)) 16px 8px;
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);
+  border-bottom:2px solid rgba(217,0,255,.14);
+  background:rgba(13,6,20,.92);position:relative;z-index:20;
+}
+.mv-status .live{color:var(--yellow)}
+.mv-status .live b{animation:blink 1.4s infinite}
+.mv-status .clock{color:var(--wht)}
+
+/* dock */
+.mv-dock{
+  flex:0 0 auto;position:relative;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 14px calc(7px + env(safe-area-inset-bottom));
+  border-top:2px solid rgba(217,0,255,.14);
+  background:rgba(13,6,20,.92);font-size:9px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;
+}
+.dock-btn{background:transparent;border:2px solid rgba(217,0,255,.35);color:var(--dim);
+  font-size:9px;letter-spacing:.16em;padding:5px 9px;text-transform:uppercase;transition:.12s}
+.dock-btn.on{color:var(--blk);background:var(--yellow);border-color:var(--blk)}
+.dock-btn:hover{border-color:var(--yellow);color:var(--yellow)}
+.dock-btn.on:hover{color:var(--blk)}
+.mv-home{width:34px;height:34px;border-radius:50%;background:var(--yellow);border:3px solid var(--blk);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(255,0,127,.4)}
+.mv-home svg{width:20px;height:20px;display:block}
+
+/* screens */
+.mv-body{flex:1;position:relative;overflow:hidden}
+.mv-screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--app)}
+.mv-screen.show{display:flex}
+.mv-screen .scr-head{flex:0 0 auto;display:flex;align-items:center;gap:8px;
+  padding:10px 12px;border-bottom:2px solid rgba(217,0,255,.4);
+  background:var(--app);position:relative;z-index:5}
+.scr-back{font-family:'Archivo Black',sans-serif;font-size:9.5px;letter-spacing:.08em;color:var(--blk);
+  background:var(--blue);border:2px solid var(--blk);padding:6px 9px;box-shadow:2px 2px 0 rgba(0,0,0,.5);white-space:nowrap}
+.scr-title{font-family:'Archivo Black',sans-serif;font-size:13px;letter-spacing:.1em;color:var(--yellow);text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scr-count{font-size:9px;color:var(--dim);letter-spacing:.12em;white-space:nowrap}
+.scr-body{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 12px calc(16px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling:touch}
+.mv-screen.show .scr-head,.mv-screen.show .scr-body{animation:scrIn .28s ease}
+
+/* landing content */
+.mv-land{flex:1;min-height:0;overflow-y:auto;padding:18px 16px calc(22px + env(safe-area-inset-bottom))}
+.mv-land .tagline{font-size:9px;letter-spacing:.24em;color:var(--blue);text-transform:uppercase;margin-bottom:8px}
+.big-logo{font-family:'Archivo Black',sans-serif;font-size:clamp(40px,11vw,58px);line-height:.95;letter-spacing:.01em;color:var(--wht);text-transform:uppercase}
+.big-logo b{color:var(--blk);background:var(--yellow);padding:0 10px;box-shadow:4px 4px 0 var(--blue)}
+.mv-sub{font-size:11px;color:var(--dim);margin-top:10px;line-height:1.6;letter-spacing:.03em}
+.mv-sub b{color:var(--yellow)}
+
+/* pitch card */
+.pitch-card{margin-top:16px;border:2px solid var(--blue);background:linear-gradient(165deg,rgba(217,0,255,.10),rgba(217,0,255,.02));
+  padding:12px;display:flex;gap:12px;box-shadow:6px 6px 0 rgba(217,0,255,.35)}
+.pitch-card .av{flex:0 0 auto;width:56px;height:56px}
+.pitch-card .pitch{font-size:11.5px;line-height:1.62;color:var(--wht)}
+.pitch-card .nm{display:block;font-family:'Archivo Black',sans-serif;color:var(--yellow);font-size:9px;letter-spacing:.14em;margin-bottom:5px}
+
+/* stat strip */
+.mv-strip{margin-top:16px;border:2px solid rgba(217,0,255,.4);border-left:6px solid var(--yellow);
+  display:flex;flex-wrap:wrap;background:rgba(217,0,255,.06)}
+.mv-strip span{flex:1 1 45%;padding:8px 9px;font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.mv-strip span:nth-child(odd){border-right:1px dashed rgba(217,0,255,.3)}
+.mv-strip span b{display:block;color:var(--wht);font-size:11px;margin-bottom:2px}
+
+/* headings */
+.h2{display:inline-block;font-family:'Archivo Black',sans-serif;font-size:11.5px;letter-spacing:.12em;color:var(--blk);
+  background:var(--yellow);padding:5px 9px;border:2px solid var(--blk);box-shadow:3px 3px 0 var(--blue);
+  text-transform:uppercase;margin:26px 0 10px}
+.h2 .l{color:var(--blue)}
+.para{font-size:11px;color:var(--dim);line-height:1.6;letter-spacing:.03em}
+
+/* features */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.feat{border:2px solid rgba(217,0,255,.45);border-left-width:5px;border-left-color:var(--yellow);
+  padding:9px 10px;background:rgba(217,0,255,.05);display:flex;flex-direction:column;gap:3px}
+.feat b{font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.1em;color:var(--wht)}
+.feat span{font-size:9.5px;line-height:1.5;color:var(--dim)}
+
+/* fund bar */
+.fund{margin:6px 0 10px;font-size:10.5px;color:var(--dim);letter-spacing:.04em;line-height:1.6}
+.fund b{color:var(--yellow)}
+.bar{margin:8px 0 0;height:16px;border:2px solid var(--blk);background:#15092a;box-shadow:3px 3px 0 var(--blue)}
+.bar .fill{height:100%;width:8%;background:repeating-linear-gradient(90deg,var(--yellow) 0 8px,var(--blk) 8px 10px)}
+.bar-labels{display:flex;justify-content:space-between;margin-top:7px;font-size:8px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+.bar-labels b{color:var(--yellow)}
+
+/* tiers */
+.tier{border:2px solid rgba(217,0,255,.4);background:rgba(217,0,255,.05);padding:9px 10px;margin-bottom:8px;display:flex;align-items:center;gap:9px}
+.tier .t-cost{flex:0 0 auto;font-family:'Archivo Black',sans-serif;font-size:15px;color:var(--yellow);background:var(--blk);border:2px solid var(--yellow);padding:6px 7px;text-align:center}
+.tier .t-nm{flex:1;font-family:'Archivo Black',sans-serif;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;line-height:1.4}
+.tier .t-pk{flex:1 1 100%;font-size:9px;color:var(--dim);line-height:1.5;margin-top:6px}
+.tier .t-row{display:flex;flex-wrap:wrap;align-items:center;gap:9px;width:100%}
+.tier button{flex:0 0 auto;background:var(--blue);border:2px solid var(--blk);color:var(--blk);
+  font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.1em;padding:6px 9px;box-shadow:2px 2px 0 rgba(0,0,0,.5);text-transform:uppercase}
+.tier button:active{transform:translate(1px,1px);box-shadow:0 0 0 rgba(0,0,0,.5)}
+
+/* big CTA */
+.mv-cta{display:block;width:100%;margin-top:22px;text-align:center;position:relative;
+  font-family:'Archivo Black',sans-serif;font-size:clamp(13px,3.6vw,16px);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--blk);background:var(--yellow);border:3px solid var(--blk);
+  padding:16px 14px;box-shadow:6px 6px 0 var(--blue);text-decoration:none}
+.mv-cta:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--blue)}
+.mv-cta small{display:block;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;color:rgba(6,6,6,.65);margin-top:4px}
+.cta-note{margin-top:14px;font-size:9px;color:var(--dim);letter-spacing:.06em;line-height:1.6;text-align:center}
+.cta-note a{color:var(--blue);text-decoration:none;border-bottom:1px dashed var(--blue)}
+.link-row{display:flex;gap:9px;margin-top:10px}
+.link-row a{flex:1;text-align:center;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;
+  color:var(--blue);border:2px solid rgba(217,0,255,.5);padding:9px 6px}
+.link-row a:active{color:var(--yellow);border-color:var(--yellow)}
+
+/* spam feed (landing) */
+.feed-row{display:flex;gap:8px;margin-top:10px}
+.feed-row input{flex:1;min-width:0;background:transparent;border:2px solid var(--blue);color:var(--wht);
+  font-size:11.5px;letter-spacing:.06em;padding:10px;outline:none;caret-color:var(--yellow)}
+.feed-row input:focus{border-color:var(--yellow)}
+.feed-row button{background:var(--yellow);border:2px solid var(--blk);color:var(--blk);
+  font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.1em;padding:0 13px;text-transform:uppercase}
+.feed-result{margin-top:10px;font-size:10.5px;letter-spacing:.14em;color:var(--blue);text-transform:uppercase}
+.feed-result b{color:var(--yellow)}
+.mv-donate-reply{margin-top:12px;border:2px solid var(--yellow);border-left-width:6px;padding:10px 12px;
+  background:rgba(255,0,127,.07);font-size:10px;letter-spacing:.08em;line-height:1.6;color:var(--dim);text-transform:uppercase}
+
+/* ---------- THE WEB stage (menu on the spinning web) ---------- */
+.stage-wrap{flex:1;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 46%,#1a0b2e 0%,#120729 62%,#0a0514 100%)}
+.stage-wrap .web-box{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.stage-wrap .web-arr{position:relative;width:min(150vmin,700px);height:min(150vmin,700px);opacity:0}
+.stage-wrap.open .web-arr{animation:webArr .9s cubic-bezier(.2,.85,.3,1) both}
+.stage-wrap .web-arr svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+.stage-wrap .web-arr svg.web-rot{animation:spin360 46s linear infinite}
+.stage-wrap .web-arr svg.web-rot.rev{width:132%;height:132%;left:50%;top:50%;margin-left:-66%;margin-top:-66%;
+  animation:spin360 90s linear infinite reverse;opacity:.45}
+.stage-wrap .stage-tag{position:absolute;left:0;right:0;bottom:14px;text-align:center;z-index:3;
+  font-size:9px;letter-spacing:.26em;color:var(--dim);text-transform:uppercase;pointer-events:none}
+.stage-wrap .stage-tag b{color:var(--yellow)}
+.hub,.node{position:absolute;transform:translate(-50%,-50%);z-index:4;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-family:'Archivo Black',sans-serif;text-transform:uppercase;color:var(--blk);
+  background:var(--yellow);border:3px solid var(--blk);padding:5px;
+  opacity:0;pointer-events:none;transition:filter .12s}
+.hub{left:50%;top:45%;width:112px;height:112px;flex-direction:column;gap:3px;
+  font-size:10px;letter-spacing:.1em;box-shadow:4px 4px 0 rgba(0,0,0,.6),0 0 24px rgba(255,0,127,.35)}
+.hub svg{width:36px;height:36px;display:block}
+.stage-wrap.open .hub{opacity:1;pointer-events:auto;animation:hubPulse 2.6s ease-in-out infinite}
+.stage-wrap.open .hub .hub-in{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  animation:popIn .55s cubic-bezier(.2,.9,.3,1.4) both;animation-delay:.12s}
+.node{width:72px;height:72px;font-size:10px;letter-spacing:.06em;line-height:1.15;
+  box-shadow:3px 3px 0 rgba(0,0,0,.6);padding:6px}
+.node.n-top{left:50%;top:13%}
+.node.n-left{left:13.5%;top:45%}
+.node.n-right{left:86.5%;top:45%}
+.node.n-bottom{left:50%;top:82%}
+.stage-wrap.open .node{animation:popC .5s cubic-bezier(.2,.9,.3,1.3) both;pointer-events:auto}
+.stage-wrap.open .node.n-top{animation-delay:.28s}
+.stage-wrap.open .node.n-left{animation-delay:.42s}
+.stage-wrap.open .node.n-right{animation-delay:.56s}
+.stage-wrap.open .node.n-bottom{animation-delay:.7s}
+.hub:hover,.node:hover{filter:brightness(1.14)}
+.hub:active,.node:active{transform:translate(-50%,-50%) scale(.96)}
+
+/* node screens */
+.mail-item{border:1.5px solid rgba(217,0,255,.35);border-left:4px solid var(--blue);
+  padding:9px 11px;margin-bottom:8px;background:rgba(217,0,255,.05);font-size:11px;color:var(--wht);line-height:1.5;animation:fadeUp .25s ease}
+.mail-item b{display:block;font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.08em;color:var(--blue);text-transform:uppercase;margin-bottom:2px}
+.mail-item span{font-size:10.5px;color:var(--dim)}
+.mail-item.warn{border-left-color:var(--yellow)}
+.mail-item.warn b{color:var(--yellow)}
+.mail-item .when{display:block;text-align:right;font-size:8.5px;color:rgba(196,169,232,.5);margin-top:5px;letter-spacing:.1em}
+.spin-fields{display:flex;flex-direction:column;gap:9px}
+.spin-fields label{font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.spin-fields input,.spin-fields textarea{background:rgba(13,6,20,.6);border:2px solid var(--blue);color:var(--wht);
+  font-size:12px;letter-spacing:.05em;padding:10px;outline:none;caret-color:var(--yellow);width:100%}
+.spin-fields textarea{min-height:86px;resize:none}
+.spin-fields input:focus,.spin-fields textarea:focus{border-color:var(--yellow)}
+.spin-send{width:100%;font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.14em;color:var(--blk);
+  background:var(--yellow);border:3px solid var(--blk);padding:13px;box-shadow:4px 4px 0 var(--blue);text-transform:uppercase}
+.spin-send:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--blue)}
+.spin-send.ghost{background:transparent;color:var(--blue);border:2px solid var(--blue);box-shadow:3px 3px 0 rgba(217,0,255,.4)}
+.spin-ok{display:none;margin-top:12px;font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.1em;color:var(--yellow);text-align:center;text-transform:uppercase}
+.spin-ok.show{display:block;animation:popIn .35s ease}
+.bs{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.12em;color:var(--blue);text-transform:uppercase;margin-bottom:10px;line-height:1.7}
+.bs b{color:var(--yellow)}
+.empty-txt{text-align:center;padding:26px 10px;color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase;line-height:1.9}
+
+/* drawer screen (embedded full prototype) */
+.drawer-wrap{flex:1;min-height:0;display:flex;flex-direction:column}
+#mvDrawerFrame{flex:1;border:0;width:100%;background:var(--blk);min-height:0}
+
+/* subtitle + burst webs + spider cursor */
+#mvSub{position:absolute;left:12px;right:12px;bottom:calc(58px + env(safe-area-inset-bottom));z-index:70;
+  display:none;align-items:center;gap:9px;background:#1a0b2e;border:2px solid var(--blue);
+  border-left:6px solid var(--yellow);box-shadow:4px 4px 0 rgba(0,0,0,.55);
+  padding:9px 11px;font-size:9.5px;letter-spacing:.1em;line-height:1.5;color:var(--wht);
+  text-transform:uppercase;animation:toastIn .22s ease}
+#mvSub.show{display:flex}
+#mvSub .sb-nm{flex:0 0 auto;font-family:'Archivo Black',sans-serif;font-size:8px;letter-spacing:.12em;color:var(--yellow)}
+.web{position:fixed;left:0;top:0;width:120px;height:120px;margin:-60px 0 0 -60px;
+  pointer-events:none;z-index:9990;transform-origin:center;--s:1;--r:0deg;
+  animation:webBurst 1.15s ease-out forwards}
+.web svg{width:100%;height:100%;display:block}
+#spiderCursor{position:fixed;left:0;top:0;width:40px;height:40px;pointer-events:none;z-index:9999;
+  display:none;will-change:transform;filter:drop-shadow(0 0 6px rgba(230,213,247,.55))}
+#spiderCursor svg{width:100%;height:100%;display:block;overflow:visible}
+body.spider-cursor,body.spider-cursor *{cursor:none !important}
+body.spider-cursor input,body.spider-cursor textarea{cursor:text !important}
+body.spider-cursor #spiderCursor{display:block}
+#spiderCursor.over-field{opacity:.25;filter:none}
+@media(pointer:coarse){#spiderCursor{width:24px;height:24px;filter:drop-shadow(0 0 4px rgba(230,213,247,.45))}}
+</style>
+</head>
+<body>
+<div id="mvApp">
+  <div class="mv-status">
+    <span>MIKIMAIL</span>
+    <span class="live"><b>●</b> LIVE</span>
+    <span class="clock" id="mvClock">9:41</span>
+  </div>
+
+  <div class="mv-body">
+
+    <!-- ============ SCREEN: FRONT END / LANDING ============ -->
+    <main class="mv-screen show" id="scr-landing">
+      <div class="mv-land" id="mvLanding">
+        <p class="tagline">A SIDE HUSTLE ▸ THE EMAIL THAT RUNS ON ABSOLUTION AND A DREAM</p>
+        <div class="big-logo">MIKI<b>MAIL</b></div>
+        <p class="mv-sub"><b>EMAIL, BUT GOOD.</b> one drawer, zero guilt, and a spider who personally vets your spam. this is the front end — Charlotte the spidey is your cursor, and the whole app opens with a spin.</p>
+
+        <div class="pitch-card">
+          <img class="av" id="mvMikiImg" alt="Miki" src="https://user.uploads.dev/file/1df925ec85800fafc1bedf09060f85da.jpg">
+          <div class="pitch">
+            <span class="nm">MIKI ▸ FOUNDER, CEO, AND ONLY EMPLOYEE</span>
+            <span id="mvPitchTxt">Right, hear me out. Email — but good. Gmail is fine, I guess, if you enjoy inboxes with guilt and ads about boats. MIKIMAIL is different: one drawer, zero guilt, and a spider who personally vets your spam. Throw money at the drawer and the drawer becomes a server — full legal disclosure below, because even dreams need fine print.</span>
+          </div>
+        </div>
+
+        <div class="mv-strip">
+          <span><b>BIG MAIL RAKED IN</b>$8,008,008,008</span>
+          <span><b>WE HAVE</b>15GB OF FEELINGS</span>
+          <span><b>YOUR PRIVACY</b>IS A DRAWER</span>
+          <span><b>THE 4TH SHELF BITES</b>(THAT'S THE ENCRYPTION)</span>
+        </div>
+
+        <span class="h2"><span class="l">◈</span> FEATURES, SO FAR</span>
+        <div class="feat-grid">
+          <div class="feat"><b>SPAM</b><span>one (1) very opinionated spider. she eats the junk mail. no refunds.</span></div>
+          <div class="feat"><b>INBOX ZERO</b><span>achieved by hiding emails under the counter. they know what they did.</span></div>
+          <div class="feat"><b>STORAGE</b><span>a large shoebox, labelled "mail". expandable via more shoeboxes.</span></div>
+          <div class="feat"><b>UPTIME</b><span>99.9% — the 0.1% is the printer, and it has apologised.</span></div>
+          <div class="feat"><b>SEARCH</b><span>ctrl+f, but on vibes. finds the email you meant, not the one you typed.</span></div>
+          <div class="feat"><b>RECOVERY</b><span>forgot your password? knock twice. we'll know it's you.</span></div>
+          <div class="feat"><b>SECURITY</b><span>the 4th shelf bites. that is the encryption. do not touch the 4th shelf.</span></div>
+          <div class="feat"><b>PRIVACY</b><span>your emails are read by miki, the spider, and one (1) moth who cannot read.</span></div>
+        </div>
+
+        <span class="h2"><span class="l">◈</span> THE DREAM-SERVER FUND</span>
+        <p class="fund">FUNDED SO FAR: <b id="fundAmt">8,008 giggles</b> · GOAL: <b>1 REAL SERVER</b> — when the meter fills, MIKIMAIL goes live. the mail will actually send. Charlotte has already picked her desk.</p>
+        <div class="bar"><div class="fill" id="fundFill"></div></div>
+        <div class="bar-labels"><span>EMPTY</span><b>LIVE MIKIMAIL</b><span>REAL SERVER</span></div>
+
+        <span class="h2"><span class="l">◈</span> SUPPORT TIERS</span>
+        <div id="mvTiers">
+          <div class="tier"><div class="t-row"><span class="t-cost">$3</span><span class="t-nm">SPOOL OF WEBSILK</span><button data-tier="SPOOL OF WEBSILK">GIVE ▸</button></div><p class="t-pk">funds the thread that holds the mailbox together. you get a thank-you note from miki (contents may be a prank).</p></div>
+          <div class="tier"><div class="t-row"><span class="t-cost">$12</span><span class="t-nm">A DRAWER OF RAM</span><button data-tier="A DRAWER OF RAM">GIVE ▸</button></div><p class="t-pk">a drawer is exactly 2.4GB of feelings. your name goes in issue 02's acknowledgements.</p></div>
+          <div class="tier"><div class="t-row"><span class="t-cost">$30</span><span class="t-nm">THE ANTENNA</span><button data-tier="THE ANTENNA">GIVE ▸</button></div><p class="t-pk">MIKIMAIL needs a signal to reach your phone. a squirrel is personally informed about you. it will remember.</p></div>
+          <div class="tier"><div class="t-row"><span class="t-cost">$150</span><span class="t-nm">ONE LITERAL SERVER</span><button data-tier="ONE LITERAL SERVER">GIVE ▸</button></div><p class="t-pk">the actual computer that will hold the mail. we name a CRT after you and feed it carefully.</p></div>
+          <div class="tier"><div class="t-row"><span class="t-cost">$500</span><span class="t-nm">THE FULL MAILBOX</span><button data-tier="THE FULL MAILBOX">GIVE ▸</button></div><p class="t-pk">a working @mikimail address the day we go live, grandfathered forever. miki reads your spam personally.</p></div>
+        </div>
+        <div class="mv-donate-reply" id="mvDonateReply" hidden></div>
+
+        <span class="h2"><span class="l">◈</span> FEED THE SPIDER (TEST THE SPAM VETTING)</span>
+        <p class="fund">TYPE SOMETHING JUNK AND WATCH CHARLOTTE DO HER JOB. <b>NO REFUNDS.</b></p>
+        <div class="feed-row">
+          <input id="mvSpamIn" type="text" maxlength="80" autocomplete="off" spellcheck="false" placeholder="YOUR SPAM, DARLING?">
+          <button id="mvSpamBtn">SEND ▸</button>
+        </div>
+        <p class="feed-result" id="mvSpamResult" hidden>CHARLOTTE ATE IT. SPAM EATEN SO FAR: <b id="mvSpamCount">0</b>.</p>
+
+        <a class="mv-cta" id="mvOpenWeb" href="javascript:void(0)">OPEN THE WEB ▸<small>THE WHOLE APP LIVES BEHIND ONE SPINNING WEB. TAP IT.</small></a>
+        <p class="cta-note">a functional phone app: feed charlotte, give to the fund, spin mail into the web — or jump into the <b style="color:var(--yellow)">working prototype</b> with folders, compose, search and mail that answers back. <a id="mvLiveSite" href="https://perchance.org/play-siblingsmackdown" target="_blank" rel="noopener">▸ THE FULL SITE LIVES HERE</a></p>
+      </div>
+    </main>
+
+    <!-- ============ SCREEN: THE WEB (spinning web menu) ============ -->
+    <main class="mv-screen" id="scr-web">
+      <div class="stage-wrap" id="mvStage">
+        <div class="web-box">
+          <div class="web-arr" id="webArrMain">
+            <svg class="web-rot" id="webSvgA" viewBox="0 0 220 220" preserveAspectRatio="xMidYMid meet"></svg>
+            <svg class="web-rot rev" id="webSvgB" viewBox="0 0 220 220" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+        </div>
+        <button class="hub" id="mvHub" aria-label="open the web">
+          <span class="hub-in" id="mvHubIn"></span>
+        </button>
+        <button class="node n-top" onclick="mvGo('spin')">SPIN</button>
+        <button class="node n-left" onclick="mvGo('cocoon')">COCOON</button>
+        <button class="node n-right" onclick="mvGo('released')">RELEASED</button>
+        <button class="node n-bottom" onclick="mvGo('basement')">THE<br>BASEMENT</button>
+        <div class="stage-tag">TAP THE WEB — IT OPENS LIKE EVERYTHING ELSE AROUND HERE: <b>WITH A SPIN</b></div>
+      </div>
+    </main>
+
+    <!-- ============ SCREEN: THE WEB / CAUGHT ============ -->
+    <main class="mv-screen" id="scr-caught">
+      <div class="scr-head">
+        <button class="scr-back" onclick="mvBackWeb()">◂ THE WEB</button>
+        <span class="scr-title">THE WEB</span>
+        <span class="scr-count" id="caughtCount">CAUGHT: 0</span>
+      </div>
+      <div class="scr-body">
+        <p class="bs">EVERYTHING CAUGHT IN THE WEB LANDS HERE. <b id="caughtCount2">0</b> EATEN SO FAR.</p>
+        <div id="caughtList"></div>
+        <button class="spin-send" style="margin-top:6px" onclick="mvGo('drawer')">▸ ENTER THE DRAWER — THE WORKING PROTOTYPE</button>
+        <button class="spin-send ghost" style="margin-top:9px" onclick="mvEatSpam('a stray prince')">◈ EAT A SPAM (FEED CHARLOTTE)</button>
+        <p class="cta-note" style="margin-top:10px">the little phone behind you was the seed. this is the whole drawer — folders, compose, search, and mail that answers back.</p>
+      </div>
+    </main>
+
+    <!-- ============ SCREEN: SPIN (compose) ============ -->
+    <main class="mv-screen" id="scr-spin">
+      <div class="scr-head">
+        <button class="scr-back" onclick="mvBackWeb()">◂ THE WEB</button>
+        <span class="scr-title">SPIN</span>
+        <span class="scr-count">WRITE</span>
+      </div>
+      <div class="scr-body">
+        <div class="spin-fields">
+          <label>TO</label><input id="mvTo" placeholder="darling@anywhere" autocomplete="off">
+          <label>SUBJECT</label><input id="mvSubIn" placeholder="A THREAD, FOR YOU" autocomplete="off">
+          <label>MESSAGE (OPTIONAL, IT'S A VIBE)</label><textarea id="mvMsg" placeholder="write something. the web will catch it."></textarea>
+          <button class="spin-send" onclick="mvSend()">SPIN ▸</button>
+          <div class="spin-ok" id="mvSpinOk">RELEASED INTO THE WEB.</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ============ SCREEN: COCOON (drafts) ============ -->
+    <main class="mv-screen" id="scr-cocoon">
+      <div class="scr-head">
+        <button class="scr-back" onclick="mvBackWeb()">◂ THE WEB</button>
+        <span class="scr-title">COCOON</span>
+        <span class="scr-count">DRAFTS</span>
+      </div>
+      <div class="scr-body">
+        <div class="mail-item"><b>TO: YESHUA</b><span>can you fly me to the store? it's for... reasons.</span><span class="when">WRAPPED YDAY</span></div>
+        <div class="mail-item"><b>TO: STAR</b><span>i did NOT break the blender. the blender knows what it did.</span><span class="when">WRAPPED 09:12</span></div>
+        <div class="mail-item warn"><b>TO: THE FRIDGE</b><span>your haunting hours are now 9–5. signed, the management.</span><span class="when">WRAPPED 08:44</span></div>
+        <p class="empty-txt">silky. patient. not sent yet.</p>
+      </div>
+    </main>
+
+    <!-- ============ SCREEN: RELEASED (sent) ============ -->
+    <main class="mv-screen" id="scr-released">
+      <div class="scr-head">
+        <button class="scr-back" onclick="mvBackWeb()">◂ THE WEB</button>
+        <span class="scr-title">RELEASED</span>
+        <span class="scr-count" id="sentCount">SENT: 0</span>
+      </div>
+      <div class="scr-body">
+        <div id="releasedList"></div>
+        <p class="empty-txt" id="releasedEmpty" hidden>nothing released yet. the web is impatient.</p>
+      </div>
+    </main>
+
+    <!-- ============ SCREEN: THE BASEMENT (spam) ============ -->
+    <main class="mv-screen" id="scr-basement">
+      <div class="scr-head">
+        <button class="scr-back" onclick="mvBackWeb()">◂ THE WEB</button>
+        <span class="scr-title">THE BASEMENT</span>
+        <span class="scr-count" id="bsCountH">SPAM: 0</span>
+      </div>
+      <div class="scr-body">
+        <p class="bs">CHARLOTTE PATROLS HERE. SPAM EATEN: <b id="bsCount">0</b>.</p>
+        <div id="spamList"></div>
+        <p class="empty-txt" id="bsEmpty">the junk knows better than to knock. for now.</p>
+        <button class="spin-send" style="margin-top:6px" onclick="mvEatSpam('another prince')">DROP SPAM ▸</button>
+      </div>
+    </main>
+
+    <!-- ============ SCREEN: THE DRAWER (embedded full prototype) ============ -->
+    <main class="mv-screen" id="scr-drawer">
+      <div class="scr-head">
+        <button class="scr-back" onclick="mvBackWeb()">◂ THE WEB</button>
+        <span class="scr-title">THE DRAWER</span>
+        <span class="scr-count">FULL PROTOTYPE</span>
+      </div>
+      <div class="drawer-wrap">
+        <iframe id="mvDrawerFrame" title="MIKIMAIL working prototype"></iframe>
+      </div>
+    </main>
+
+  </div>
+
+  <div class="mv-dock">
+    <button class="dock-btn" id="dockSound" title="toggle charlotte's commentary">SOUND ▸ ON</button>
+    <button class="mv-home" id="dockHome" title="back to the web" aria-label="back to the web"></button>
+    <span class="dock-btn" id="dockSpam" title="spam eaten by charlotte">EATEN: 0</span>
+  </div>
+
+  <div id="mvSub"><span class="sb-nm" id="subNm">MIKI ▸</span><span id="subTxt"></span></div>
+</div>
+
+<div class="mv-scan"></div>
+<div class="mv-vign"></div>
+
+<div id="spiderCursor" aria-hidden="true">
+  <svg viewBox="0 0 44 44"><g fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+    <path d="M15 16 Q6 9 4 3"/><path d="M14 19 Q4 18 1 13"/>
+    <path d="M29 16 Q38 9 40 3"/><path d="M30 19 Q40 18 43 13"/>
+    <path d="M15 26 Q6 31 4 39"/><path d="M14 23 Q4 25 1 30"/>
+    <path d="M29 26 Q38 31 40 39"/><path d="M30 23 Q40 25 43 30"/>
+    <ellipse cx="22" cy="29" rx="9.5" ry="8" fill="#ffffff"/>
+    <circle cx="22" cy="15.5" r="6" fill="#ffffff"/>
+  </g></svg>
+</div>
+<script id="mailappEmbed" type="text/plain"><!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>MIKIMAIL ▸ THE DRAWER — a working prototype</title>
+<meta name="description" content="MIKIMAIL — email, but good. A working, self-contained prototype of Miki's dream mail service: folders, compose, search, and mail that answers back through the demo web.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!--
+  MIKIMAIL ▸ THE DRAWER — a working prototype
+  One self-contained file. No servers, no build step, no trackers.
+  Part of MIKI-NEKO.TV (https://perchance.org/play-siblingsmackdown).
+  Open it in any browser, or push it to GitHub / GitHub Pages.
+  Mail travels through the demo web (a drawer). Charlotte vets the spam.
+-->
+<style>
+  :root{
+    --blk:#0b0512;
+    --wht:#e6d5f7;
+    --blue:#d900ff;
+    --yellow:#ff007f;
+    --dim:#c4a9e8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{color-scheme:dark}
+  body{
+    background:var(--blk);
+    color:var(--wht);
+    font-family:'Space Mono',monospace;
+    text-align:left;
+    min-height:100vh;
+    overflow:hidden;
+  }
+  button{cursor:pointer}
+  @keyframes pulse{50%{opacity:.2}}
+  /* ---------- MIKIMAIL: THE WORKING PROTOTYPE (fullscreen app for investors) ---------- */
+  body.mailapp-mode{overflow:hidden}
+  body.mailapp-mode header,
+  body.mailapp-mode .site-foot,
+  body.mailapp-mode .ticker,
+  body.mailapp-mode #testTag,
+  body.mailapp-mode #scrollHint{display:none}
+  body.mailapp-mode #view-mailapp{position:fixed;inset:0;z-index:80;min-height:0;overflow:hidden}
+  #view-mailapp{background:radial-gradient(circle at 50% 38%,#190d33 0%,#0c0620 55%,#04020c 100%)}
+  .mailapp-shell{position:absolute;inset:0;display:flex;flex-direction:column;background:#0a0718;border:3px solid var(--blk);outline:3px solid rgba(217,0,255,.5);font-family:'Space Mono',monospace;color:var(--wht);min-height:0}
+  .ma-bar{display:flex;align-items:center;gap:11px;padding:0 12px;height:46px;flex:0 0 auto;background:linear-gradient(180deg,#161123,#0d0a1a);border-bottom:3px solid var(--blue);position:relative;z-index:2}
+  .ma-dots{display:flex;gap:6px;flex:0 0 auto}
+  .ma-dots span{width:13px;height:13px;border:2px solid var(--blk);box-shadow:1.5px 1.5px 0 rgba(0,0,0,.6)}
+  .ma-dots span:nth-child(1){background:#FF5A5A}
+  .ma-dots span:nth-child(2){background:var(--yellow)}
+  .ma-dots span:nth-child(3){background:#4BE36A}
+  .ma-logo{background:var(--yellow);color:var(--blk);font-family:'Archivo Black',sans-serif;font-size:14px;letter-spacing:.04em;padding:6px 9px;border:2px solid var(--blk);box-shadow:3px 3px 0 var(--blue);white-space:nowrap;text-transform:uppercase;flex:0 0 auto}
+  .ma-logo b{background:var(--blk);color:var(--yellow);padding:0 4px;margin-left:3px}
+  .ma-title{font-size:10px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;white-space:nowrap;flex:0 0 auto}
+  .ma-status{font-size:10px;letter-spacing:.16em;color:#8fd88a;text-transform:uppercase;white-space:nowrap;display:flex;align-items:center;gap:7px;flex:0 0 auto}
+  .ma-status::before{content:"";width:8px;height:8px;background:#4BE36A;animation:pulse 1.2s infinite}
+  .ma-clock{margin-left:auto;font-size:15px;color:var(--blue);font-weight:700;letter-spacing:.08em;white-space:nowrap;flex:0 0 auto}
+  .ma-live{font-size:9px;letter-spacing:.18em;color:var(--yellow);border:1.5px solid rgba(255,0,127,.6);padding:3px 7px;white-space:nowrap;text-transform:uppercase;flex:0 0 auto}
+  .ma-live .blink{animation:pulse 1s infinite}
+  .ma-exit{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.1em;background:var(--blk);color:var(--wht);border:2px solid var(--wht);box-shadow:3px 3px 0 var(--blue);padding:7px 11px;cursor:pointer;white-space:nowrap;text-transform:uppercase;flex:0 0 auto}
+  .ma-exit:hover{background:var(--yellow);color:var(--blk);border-color:var(--blk)}
+  .ma-toolbar{display:flex;align-items:center;gap:10px;padding:7px 12px;flex:0 0 auto;border-bottom:2px solid rgba(217,0,255,.3);background:rgba(217,0,255,.06);flex-wrap:wrap}
+  .ma-compose{font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.12em;color:var(--blk);background:var(--yellow);border:2px solid var(--blk);box-shadow:3px 3px 0 var(--blue);padding:9px 14px;cursor:pointer;text-transform:uppercase;white-space:nowrap}
+  .ma-compose:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--blue)}
+  .ma-search{flex:1 1 200px;display:flex;align-items:center;gap:8px;background:var(--blk);border:2px solid var(--blue);padding:0 10px;min-width:0}
+  .ma-search span{font-size:9px;letter-spacing:.18em;color:var(--dim);white-space:nowrap;text-transform:uppercase}
+  .ma-search input{flex:1;background:none;border:none;outline:none;color:var(--wht);font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.05em;padding:8px 0;caret-color:var(--yellow);min-width:0}
+  .ma-tools{display:flex;gap:8px;margin-left:auto;flex:0 0 auto}
+  .ma-mini{font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.08em;background:transparent;color:var(--blue);border:2px solid var(--blue);padding:7px 11px;cursor:pointer;white-space:nowrap;text-transform:uppercase}
+  .ma-mini:hover{background:var(--blue);color:var(--blk)}
+  .ma-mini.gold{color:var(--yellow);border-color:rgba(255,0,127,.6)}
+  .ma-mini.gold:hover{background:var(--yellow);color:var(--blk)}
+  .ma-main{flex:1;display:grid;grid-template-columns:225px minmax(250px,315px) minmax(0,1fr);grid-template-rows:minmax(0,1fr);min-height:0;position:relative}
+  .ma-rail{display:flex;flex-direction:column;border-right:2px solid rgba(217,0,255,.3);overflow-y:auto;padding:10px;gap:8px;background:rgba(0,0,0,.25);min-height:0}
+  .ma-rail-h{font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;margin:10px 2px 2px}
+  .ma-folder{position:relative;display:flex;align-items:center;gap:9px;width:100%;background:transparent;border:2px solid rgba(217,0,255,.25);color:var(--wht);font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.1em;padding:10px 9px;cursor:pointer;text-align:left;text-transform:uppercase;transition:background .1s,border-color .1s}
+  .ma-folder .f-ic{width:20px;text-align:center;color:var(--blue);font-size:13px;flex:0 0 auto}
+  .ma-folder .f-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ma-folder .f-n{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim)}
+  .ma-folder .u-dot{display:none;width:9px;height:9px;background:var(--yellow);flex:0 0 auto;box-shadow:0 0 8px rgba(255,0,127,.8)}
+  .ma-folder.has-u .u-dot{display:block;animation:pulse 1.4s infinite}
+  .ma-folder:hover{border-color:var(--blue);background:rgba(217,0,255,.12)}
+  .ma-folder.on{background:var(--blue);border-color:var(--blue);color:var(--blk);box-shadow:4px 4px 0 rgba(0,0,0,.45)}
+  .ma-folder.on .f-ic{color:var(--blk)}
+  .ma-folder.on .f-n{color:rgba(6,6,6,.72)}
+  .ma-folder.on .u-dot{background:var(--blk);box-shadow:none}
+  .ma-rail-meta{display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:12px;border-top:2px dashed rgba(217,0,255,.35);font-size:9.5px;letter-spacing:.1em;color:var(--dim);line-height:1.5}
+  .ma-rail-meta .m-t{font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.2em;color:var(--blue);text-transform:uppercase}
+  .ma-rail-meta .m-t b{color:var(--yellow)}
+  .ma-rail-meta .m-l{display:flex;justify-content:space-between;gap:8px;color:var(--dim)}
+  .ma-rail-meta .m-l b{color:var(--yellow)}
+  .ma-bar2{height:8px;background:var(--blk);border:1px solid rgba(217,0,255,.6);position:relative;overflow:hidden}
+  .ma-bar2 .fill2{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--blue),#8fb2ff);transition:width .6s}
+  .ma-bar2.gold .fill2{background:repeating-linear-gradient(90deg,#FFB700 0,#FFB700 12px,var(--yellow) 12px,var(--yellow) 20px);animation:fundShift 2.4s linear infinite;background-size:200% 100%}
+  @keyframes fundShift{0%{background-position:0 0}100%{background-position:80px 0}}
+  .ma-tier{display:flex;align-items:center;gap:6px;border:1.5px solid rgba(217,0,255,.3);padding:5px 7px;background:rgba(217,0,255,.05)}
+  .ma-tier .t-cost{font-family:'Archivo Black',sans-serif;font-size:11px;color:var(--yellow);flex:0 0 auto}
+  .ma-tier .t-nm{flex:1;font-size:8px;letter-spacing:.1em;color:var(--wht);text-transform:uppercase;line-height:1.4}
+  .ma-tier button{font-family:'Archivo Black',sans-serif;font-size:8.5px;letter-spacing:.06em;background:var(--blue);color:var(--blk);border:1.5px solid var(--blk);padding:3px 7px;cursor:pointer;text-transform:uppercase}
+  .ma-tier button:hover{background:var(--yellow)}
+  .ma-list-ctn{display:flex;flex-direction:column;min-height:0;min-width:0;border-right:2px solid rgba(217,0,255,.3);background:rgba(0,0,0,.18)}
+  .ma-folder-head{display:flex;align-items:baseline;gap:10px;padding:11px 14px 9px;border-bottom:2px solid rgba(217,0,255,.35);background:rgba(217,0,255,.1)}
+  .ma-folder-head .fh{font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:.1em;color:var(--yellow);text-transform:uppercase;white-space:nowrap}
+  .ma-folder-head .fc{font-size:9px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+  .ma-list{flex:1;overflow-y:auto;min-height:0}
+  .ma-row{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;column-gap:9px;row-gap:3px;align-items:center;width:100%;text-align:left;background:transparent;border:none;border-bottom:1.5px solid rgba(217,0,255,.16);border-left:3px solid transparent;padding:9px 12px;cursor:pointer;color:var(--wht);font-family:'Space Mono',monospace}
+  .ma-row:hover{background:rgba(217,0,255,.09)}
+  .ma-row.sel{background:rgba(217,0,255,.2);border-left-color:var(--yellow)}
+  .ma-row .dot{grid-column:1;grid-row:1/3;width:8px;height:8px;background:var(--yellow);box-shadow:0 0 8px rgba(255,0,127,.7);visibility:hidden}
+  .ma-row.unread .dot{visibility:visible}
+  .ma-row .from{grid-column:2;grid-row:1;font-family:'Archivo Black',sans-serif;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--wht)}
+  .ma-row.unread .from{color:var(--yellow)}
+  .ma-row .subj{grid-column:2;grid-row:2;font-size:10.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ma-row.unread .subj{color:#cfd6ea}
+  .ma-row .tm{grid-column:3;grid-row:1/3;font-size:9px;color:var(--dim);white-space:nowrap}
+  .ma-row.spam{border-left-color:rgba(255,0,127,.85);background:rgba(255,0,127,.05)}
+  .ma-row.spam .from{color:#ffd25e}
+  .ma-row.newmail{animation:newMailPop 1.8s ease}
+  @keyframes newMailPop{0%{background:rgba(255,0,127,.45)}100%{background:transparent}}
+  .ma-empty{padding:26px 12px;text-align:center;color:var(--dim);font-size:10.5px;letter-spacing:.14em;line-height:1.9;text-transform:uppercase}
+  .ma-pane{display:flex;flex-direction:column;min-width:0;min-height:0;position:relative;background:#0d0a1a}
+  .ma-pane-back{display:none;font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.1em;background:var(--blk);color:var(--wht);border:2px solid var(--wht);box-shadow:2px 2px 0 var(--blue);padding:6px 10px;cursor:pointer;margin:8px 0 0 10px;align-self:flex-start;text-transform:uppercase}
+  .ma-pane-top{display:flex;align-items:baseline;gap:10px;padding:13px 18px 9px;border-bottom:2px solid rgba(217,0,255,.25)}
+  .ma-pane-top .pt-k{font-size:9px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;flex:0 0 auto}
+  .ma-pane-top .pt-v{font-family:'Archivo Black',sans-serif;font-size:13px;letter-spacing:.07em;color:var(--blue);text-transform:uppercase;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ma-read{flex:1;overflow-y:auto;padding:16px 20px 10px;min-height:0}
+  #maRead[hidden],.ma-actions[hidden],.ma-compose-form[hidden]{display:none!important}
+  .ma-read .rm-from{font-family:'Archivo Black',sans-serif;font-size:16px;letter-spacing:.05em;color:var(--yellow);text-transform:uppercase;line-height:1.35}
+  .ma-read .rm-meta{font-size:9.5px;letter-spacing:.14em;color:var(--dim);margin:6px 0 14px;text-transform:uppercase}
+  .ma-read .rm-meta b{color:var(--blue)}
+  .ma-read .rm-body{font-size:13px;line-height:1.8;color:#e8e6f2}
+  .ma-read .rm-body .ln{display:block;margin-bottom:10px}
+  .ma-read .rm-quote{margin-top:16px;padding:9px 12px;border-left:3px solid var(--blue);background:rgba(217,0,255,.07);font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+  .ma-actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px 16px;border-top:2px solid rgba(217,0,255,.2)}
+  .ma-act{font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.08em;background:var(--blue);color:var(--blk);border:2px solid var(--blk);box-shadow:2.5px 2.5px 0 rgba(0,0,0,.5);padding:8px 12px;cursor:pointer;text-transform:uppercase}
+  .ma-act:hover{background:var(--yellow)}
+  .ma-act.ghost2{background:transparent;color:var(--blue);border-color:var(--blue);box-shadow:none}
+  .ma-act.ghost2:hover{color:var(--yellow);border-color:var(--yellow);background:transparent}
+  .ma-act.danger{background:var(--blk);color:#ffb3b3;border-color:#ff5a6e}
+  .ma-act.danger:hover{background:#ff5a6e;color:var(--blk)}
+  .ma-empty-pane{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:30px;color:var(--dim);min-height:100%;box-sizing:border-box}
+  .ma-empty-pane .ep-logo{font-size:42px;filter:drop-shadow(0 0 14px rgba(255,0,127,.5))}
+  .ma-empty-pane .ep-big{font-family:'Archivo Black',sans-serif;font-size:clamp(17px,2.4vw,26px);letter-spacing:.05em;color:rgba(217,0,255,.65);text-transform:uppercase;text-shadow:4px 4px 0 rgba(0,0,0,.5)}
+  .ma-empty-pane p{font-size:11px;letter-spacing:.12em;line-height:1.8;text-transform:uppercase}
+  .ma-empty-pane p b{color:var(--yellow)}
+  .ma-compose-form{flex:1;overflow-y:auto;padding:14px 18px 20px;display:flex;flex-direction:column;gap:11px;min-height:0}
+  .ma-cf-label{font-family:'Archivo Black',sans-serif;font-size:9.5px;letter-spacing:.2em;color:var(--blue);text-transform:uppercase;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .ma-cf-label .cl-hint{color:var(--dim);font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.08em;text-transform:none}
+  .ma-cf-label .cl-hint b{color:var(--yellow)}
+  .ma-compose-form input,.ma-compose-form textarea{background:var(--blk);border:2px solid var(--blue);color:var(--wht);font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.04em;padding:11px 12px;outline:none;caret-color:var(--yellow);width:100%;box-sizing:border-box}
+  .ma-compose-form input:focus,.ma-compose-form textarea:focus{border-color:var(--yellow)}
+  .ma-compose-form textarea{min-height:140px;resize:none;flex:1;line-height:1.65}
+  .ma-send{font-family:'Archivo Black',sans-serif;font-size:13.5px;letter-spacing:.14em;color:var(--blk);background:var(--yellow);border:3px solid var(--blk);box-shadow:4px 4px 0 var(--blue);padding:13px;cursor:pointer;text-transform:uppercase;width:100%}
+  .ma-send:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--blue)}
+  .ma-send:disabled{opacity:.45;cursor:wait}
+  .ma-cf-note{font-size:9px;letter-spacing:.1em;color:var(--dim);line-height:1.6;text-transform:uppercase}
+  .ma-cf-note b{color:var(--yellow)}
+  .ma-foot{flex:0 0 auto;height:24px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 14px;background:#0d0a1a;border-top:2px solid rgba(217,0,255,.3);font-size:8px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  .ma-foot .ft{overflow:hidden;text-overflow:ellipsis}
+  .ma-foot .ft b{color:var(--yellow)}
+  .ma-toasts{position:absolute;right:14px;bottom:34px;z-index:60;display:flex;flex-direction:column;gap:9px;width:min(340px,86vw);pointer-events:none}
+  .ma-toast{pointer-events:auto;cursor:pointer;background:#161123;border:2px solid var(--blue);border-left:6px solid var(--yellow);box-shadow:5px 5px 0 rgba(0,0,0,.55);padding:11px 13px;font-size:10px;letter-spacing:.08em;line-height:1.55;color:var(--wht);animation:maToastIn .28s cubic-bezier(.2,.9,.3,1.3);text-transform:uppercase}
+  .ma-toast b{color:var(--yellow);font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.06em}
+  .ma-toast.kind-new{border-left-color:#4BE36A}
+  .ma-toast.kind-new b{color:#4BE36A}
+  .ma-toast.kind-warn{border-left-color:#FF5A5A}
+  .ma-toast.kind-warn b{color:#FF5A5A}
+  .ma-toast.bye{animation:maToastOut .3s ease forwards}
+  @keyframes maToastIn{from{opacity:0;transform:translateX(30px) scale(.92)}to{opacity:1;transform:none}}
+  @keyframes maToastOut{to{opacity:0;transform:translateX(40px) scale(.92)}}
+  .tour-glow{box-shadow:0 0 0 3px var(--blk),0 0 0 6px var(--yellow),0 0 34px rgba(255,0,127,.9)!important;z-index:20;position:relative}
+  @media(max-width:1180px){
+    .ma-main{grid-template-columns:205px 275px minmax(0,1fr)}
+    .ma-title{display:none}
+  }
+  @media(max-width:900px){
+    .ma-main{grid-template-columns:minmax(250px,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+    .ma-rail{grid-column:1/3;grid-row:1;flex-direction:row;overflow-x:auto;align-items:center;gap:6px;padding:6px 8px;border-right:none;border-bottom:2px solid rgba(217,0,255,.3)}
+    .ma-rail .ma-rail-meta,.ma-rail .ma-rail-h{display:none}
+    .ma-rail #maFolders{display:flex;flex-direction:row;gap:6px}
+    .ma-folder{width:auto;flex:0 0 auto;padding:8px 13px}
+    .ma-list-ctn{grid-column:1;grid-row:2}
+    .ma-pane{grid-column:2;grid-row:2}
+  }
+  @media(max-width:640px){
+    .ma-main{display:flex;flex-direction:column}
+    .ma-rail{flex:0 0 auto;overflow-x:visible;flex-wrap:wrap}
+    .ma-rail #maFolders{flex-wrap:wrap;row-gap:6px}
+    .ma-list-ctn{flex:1;min-height:0;border-right:none}
+    .ma-pane{position:absolute;inset:0;z-index:8;background:#0d0a1a}
+    .mailapp-shell.on-mobile .ma-pane{display:none}
+    .mailapp-shell.on-mobile.pane-on .ma-pane{display:flex}
+    .mailapp-shell.on-mobile.pane-on .ma-list-ctn{display:none}
+    .ma-pane-back{display:inline-block}
+    .ma-dots,.ma-status{display:none}
+    .ma-live{display:none}
+    .ma-bar{padding:0 8px;gap:8px}
+    .ma-exit{padding:6px 9px;font-size:10px}
+    .ma-foot .ft:last-child{display:none}
+    .ma-toasts{left:10px;right:10px;width:auto;bottom:32px}
+  }
+  /* ---------- standalone shell: exit / landing screen ---------- */
+  #maLanding{position:fixed;inset:0;z-index:95;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 32%,#190d33 0%,#0c0620 60%,#04020c 100%);padding:22px;overflow-y:auto}
+  body.ma-landing #maLanding{display:flex}
+  body.ma-landing #view-mailapp{display:none}
+  .ln-card{width:min(780px,94vw);margin:auto;background:#0a0718;border:3px solid var(--blk);outline:3px solid rgba(217,0,255,.5);box-shadow:16px 16px 0 var(--blue);padding:38px 34px 26px;position:relative}
+  .ln-logo{display:inline-block;background:var(--yellow);color:var(--blk);font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:.04em;padding:7px 10px;border:2px solid var(--blk);box-shadow:3px 3px 0 var(--blue);text-transform:uppercase}
+  .ln-logo b{background:var(--blk);color:var(--yellow);padding:0 4px;margin-left:3px}
+  .ln-kicker{margin-top:24px;font-size:10px;letter-spacing:.32em;color:var(--blue);text-transform:uppercase}
+  .ln-title{font-family:'Archivo Black',sans-serif;font-size:clamp(28px,5.6vw,54px);line-height:1.05;text-transform:uppercase;letter-spacing:.01em;margin-top:10px;color:var(--wht)}
+  .ln-title span{color:var(--yellow)}
+  .ln-blurb{margin-top:18px;font-size:13px;line-height:1.9;color:#cfd6ea;letter-spacing:.04em;max-width:62ch}
+  .ln-blurb b{color:var(--yellow)}
+  .ln-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:26px}
+  .ln-btn{display:inline-block;font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-decoration:none;padding:13px 18px;border:2px solid var(--blk)}
+  .ln-btn.main{background:var(--yellow);color:var(--blk);box-shadow:5px 5px 0 var(--blue)}
+  .ln-btn.main:hover{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--blue)}
+  .ln-btn.ghost{background:transparent;color:var(--blue);border:2px solid var(--blue);box-shadow:5px 5px 0 rgba(217,0,255,.35)}
+  .ln-btn.ghost:hover{color:var(--yellow);border-color:var(--yellow)}
+  .ln-fund{margin-top:28px;border-top:2px dashed rgba(217,0,255,.35);padding-top:18px}
+  .ln-fund-h{display:flex;justify-content:space-between;gap:10px;font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.18em;color:var(--blue);text-transform:uppercase;flex-wrap:wrap}
+  .ln-fund-h span:last-child{color:var(--yellow)}
+  .ln-bar{height:14px;background:var(--blk);border:1.5px solid rgba(217,0,255,.6);position:relative;overflow:hidden;margin-top:11px}
+  .ln-fill{position:absolute;inset:0 auto 0 0;width:100%;background:repeating-linear-gradient(90deg,#FFB700 0,#FFB700 12px,var(--yellow) 12px,var(--yellow) 20px);animation:fundShift 2.4s linear infinite;background-size:200% 100%}
+  .ln-fund-l{display:flex;justify-content:space-between;gap:10px;margin-top:9px;font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;flex-wrap:wrap}
+  .ln-fund-l span:last-child{color:var(--yellow)}
+  .ln-foot{margin-top:24px;font-size:8.5px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;line-height:1.8}
+  .ln-foot b{color:var(--yellow)}
+  .ln-sub{margin-top:9px;font-size:8px;letter-spacing:.18em;color:#55555f;text-transform:uppercase;line-height:1.8}
+  @media (max-width:640px){
+    .ln-card{padding:26px 18px 18px;box-shadow:9px 9px 0 var(--blue)}
+    .ln-fund-h,.ln-fund-l{flex-direction:column;gap:4px}
+    .ln-actions .ln-btn{width:100%;text-align:center}
+  }
+</style>
+</head>
+<body class="mailapp-mode">
+  <section id="view-mailapp" class="view show">
+    <div class="mailapp-shell" id="mailappShell">
+      <div class="ma-bar">
+        <div class="ma-dots"><span></span><span></span><span></span></div>
+        <div class="ma-logo">◈ MIKIMAIL<b>OS</b></div>
+        <div class="ma-title">THE DRAWER ▸ WORKING PROTOTYPE</div>
+        <div class="ma-status" id="maStatus">MAIL SERVER ▸ 1 DREAM · WARM</div>
+        <div class="ma-clock" id="maClock">--:--:--</div>
+        <div class="ma-live"><span class="blink">●</span> LIVE DEMO</div>
+        <button class="ma-exit" onclick="mailAppExit()">EXIT ▸</button>
+      </div>
+      <div class="ma-toolbar">
+        <button class="ma-compose" onclick="maCompose()">✎ WRITE NEW</button>
+        <div class="ma-search"><span>SEARCH ▸</span><input id="maSearch" type="text" maxlength="80" autocomplete="off" spellcheck="false" placeholder="ctrl+f, but on vibes" oninput="maRenderList()"></div>
+        <div class="ma-tools">
+          <button class="ma-mini" onclick="maTour()">TOUR ▸</button>
+          <button class="ma-mini gold" onclick="maFundShow()">◈ 8,008 GIGGLES ▸ SERVER</button>
+        </div>
+      </div>
+      <div class="ma-main">
+        <aside class="ma-rail">
+          <div id="maFolders"></div>
+          <div class="ma-rail-meta">
+            <div class="m-t">THE DRAWER ▸ <b>STORAGE</b></div>
+            <div class="ma-bar2"><div class="fill2" id="maStorageFill" style="width:48%"></div></div>
+            <div class="m-l"><span id="maStorageTxt">7.2GB OF 15GB OF FEELINGS</span><span>1 DRAWER</span></div>
+            <div class="m-t" style="margin-top:8px">CHARLOTTE'S REPORT ▸ <b>SPAM</b></div>
+            <div class="m-l"><span>SPAM EATEN: <b id="maSpamCount">0</b></span><span>MORALE: HIGH</span></div>
+            <div class="m-t" style="margin-top:8px">THE DREAM-SERVER FUND</div>
+            <div class="ma-bar2 gold"><div class="fill2" id="maFundFill" style="width:41%"></div></div>
+            <div class="m-l"><span>8,008 GIGGLES</span><span>GOAL ▸ 1 REAL SERVER</span></div>
+            <div class="m-t" style="margin-top:8px">SUPPORT THE DREAM ▸</div>
+            <div class="ma-tier"><span class="t-cost">$3</span><span class="t-nm">SPOOL OF WEBSILK</span><button onclick="maFund('SPOOL OF WEBSILK')">GIVE</button></div>
+            <div class="ma-tier"><span class="t-cost">$12</span><span class="t-nm">A DRAWER OF RAM</span><button onclick="maFund('A DRAWER OF RAM')">GIVE</button></div>
+            <div class="ma-tier"><span class="t-cost">$30</span><span class="t-nm">THE ANTENNA</span><button onclick="maFund('THE ANTENNA')">GIVE</button></div>
+            <div class="ma-tier"><span class="t-cost">$150</span><span class="t-nm">ONE LITERAL SERVER</span><button onclick="maFund('ONE LITERAL SERVER')">GIVE</button></div>
+            <div class="ma-tier"><span class="t-cost">$500</span><span class="t-nm">THE FULL MAILBOX</span><button onclick="maFund('THE FULL MAILBOX')">GIVE</button></div>
+          </div>
+        </aside>
+        <div class="ma-list-ctn">
+          <div class="ma-folder-head"><span class="fh" id="maFolderHead">THE WEB</span><span class="fc" id="maFolderCount"></span></div>
+          <div class="ma-list" id="maList"></div>
+        </div>
+        <section class="ma-pane" id="maPane">
+          <button class="ma-pane-back" onclick="maPaneBack()">◂ BACK TO THE LIST</button>
+          <div class="ma-pane-top"><span class="pt-k" id="maPaneKind">THE DRAWER</span><span class="pt-v" id="maPaneTitle">—</span></div>
+          <div class="ma-read" id="maRead"></div>
+          <div class="ma-compose-form" id="maComposeForm" hidden>
+            <label class="ma-cf-label">TO <span class="cl-hint">the web knows: star · pearl · hans · charlotte · the internet …</span></label>
+            <input id="maTo" type="text" list="maRecips" maxlength="60" autocomplete="off" spellcheck="false" placeholder="star@cafedreamr" oninput="maDraftKeep()">
+            <datalist id="maRecips">
+              <option value="star@cafedreamr">STAR ▸ MANAGER</option>
+              <option value="pearl@stitches.zine">PEARL ▸ THE ZINE</option>
+              <option value="hans@archives.drawer">HANS ▸ THE ARCHIVES</option>
+              <option value="milo@garden.sage">MILO ▸ THE GARDEN</option>
+              <option value="chari@atrium.net">CHARI ▸ THE ATRIUM</option>
+              <option value="charlotte@thebasement.web">CHARLOTTE ▸ SPIDEY</option>
+              <option value="bobby@puppet.hand">BOBBY ▸ THE PUPPET</option>
+              <option value="band@loud.twin">SLAY &amp; SYLVESTRE ▸ THE BAND</option>
+              <option value="yeshua@pegasus.grace">YESHUA</option>
+              <option value="fridge@cafe.drawer">THE FRIDGE ▸ THE CAFE</option>
+              <option value="anyone@theinternet.web">THE INTERNET ▸ EVERYONE</option>
+              <option value="miki@founder.drawer">MIKI ▸ THE FOUNDER</option>
+            </datalist>
+            <label class="ma-cf-label">SUBJECT <span class="cl-hint">confetti fires when you pun</span></label>
+            <input id="maSub" type="text" maxlength="80" autocomplete="off" spellcheck="false" placeholder="A THREAD, FOR YOU" oninput="maDraftKeep()">
+            <label class="ma-cf-label">MESSAGE <span class="cl-hint">optional — it's a vibe</span></label>
+            <textarea id="maMsg" maxlength="900" placeholder="write something. the web will catch it." oninput="maDraftKeep()"></textarea>
+            <button class="ma-send" id="maSendBtn" onclick="maSend()">SPIN ▸ RELEASE INTO THE WEB</button>
+            <div class="ma-cf-note">everything you release is <b>caught, kept, and vetted by charlotte</b>. the reply comes back on the web — that's the demo, darling.</div>
+          </div>
+          <div class="ma-actions" id="maActions" hidden></div>
+        </section>
+      </div>
+      <div class="ma-foot">
+        <span class="ft"><b>PROTOTYPE v0.1</b> ▸ MAIL TRAVELS THROUGH THE DEMO WEB (A DRAWER)</span>
+        <span class="ft" id="maFootLive">NOT YET A REAL EMAIL SERVICE ▸ NO BAMBOOZLE ▸ THE FUND MAKES IT REAL</span>
+      </div>
+    </div>
+    <div class="ma-toasts" id="maToasts"></div>
+  </section>
+<div id="maLanding" aria-hidden="true">
+  <div class="ln-card">
+    <div class="ln-logo">◈ MIKIMAIL<b>OS</b></div>
+    <div class="ln-kicker">THE DRAWER ▸ A WORKING PROTOTYPE</div>
+    <h1 class="ln-title">EMAIL, BUT <span>GOOD</span>.</h1>
+    <p class="ln-blurb">One drawer, zero guilt, and a spider who vets your spam personally. This is a <b>working prototype</b> — poke everything: folders, compose, search, and mail that answers back through the demo web. Write to Star, and she answers. Provoke the fridge, and it hums. Send nothing at all, and the web catches that too.</p>
+    <div class="ln-actions">
+      <button class="ln-btn main" onclick="maStandaloneReopen()">REOPEN THE PROTOTYPE ▸</button>
+      <a class="ln-btn ghost" id="lnLiveLink" href="#" target="_blank" rel="noopener">SEE THE FULL SITE ▸</a>
+    </div>
+    <div class="ln-fund">
+      <div class="ln-fund-h"><span>◈ THE DREAM-SERVER FUND</span><span>GOAL ▸ 1 REAL SERVER</span></div>
+      <div class="ln-bar"><div class="ln-fill"></div></div>
+      <div class="ln-fund-l"><span>8,008 OF 8,008 GIGGLES</span><span>WHEN THE METER FILLS, THE MAIL ACTUALLY SENDS</span></div>
+    </div>
+    <div class="ln-foot"><b>PROTOTYPE v0.1</b> ▸ MAIL TRAVELS THROUGH THE DEMO WEB (A DRAWER) — NOT YET A REAL EMAIL SERVICE ▸ NO BAMBOOZLE</div>
+    <div class="ln-sub">SELF-CONTAINED DEMO ▸ ONE FILE ▸ NO SERVERS, NO TRACKERS ▸ ESC RETURNS TO THE PROTOTYPE ▸ © 2026 MIKI-NEKO.TV</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   MIKIMAIL ▸ THE DRAWER — standalone prototype.
+   A single-file export of the working mailapp demo. The live
+   MIKI-NEKO.TV site it belongs to is linked in LIVE_SITE.
+============================================================ */
+const LIVE_SITE = "https://perchance.org/play-siblingsmackdown";
+
+const $ = id => document.getElementById(id);
+
+/* ---------- voice (Miki talks; TTS.on=false mutes speech+sound) ---------- */
+const TTS = { on:(()=>{ try{ return localStorage.getItem("mikiVoice")!=="off"; }catch(e){ return true; } })() };
+let speechQ = [], speechBusy = false;
+function speechProcess(){
+  if(speechBusy || !speechQ.length) return;
+  if(!TTS.on || !("speechSynthesis" in window)){ speechQ.length = 0; return; }
+  speechBusy = true;
+  const item = speechQ.shift();
+  try{
+    const u = new SpeechSynthesisUtterance(item.text);
+    const vs = speechSynthesis.getVoices();
+    const gb = vs.filter(v => /^en[-_]?gb/i.test(v.lang) || /british|uk english/i.test(v.name));
+    const pick = (gb.length ? gb : vs).find(v => /sonia|libby|maisie|natasha|aria|jenny|emma|google uk english female/i.test(v.name)) || (gb.length ? gb : vs)[0] || null;
+    if(pick) u.voice = pick;
+    u.rate = 1.04; u.pitch = 1.02; u.volume = 0.95;
+    const done = () => { speechBusy = false; if(speechQ.length) setTimeout(speechProcess, 70); };
+    u.onend = done; u.onerror = done;
+    speechSynthesis.resume();
+    speechSynthesis.speak(u);
+  }catch(e){ console.warn("tts:", e); speechBusy = false; if(speechQ.length) setTimeout(speechProcess, 70); }
+}
+function mikiSay(text){
+  if(!TTS.on || !text || !("speechSynthesis" in window)) return;
+  speechQ.push({text:String(text)});
+  speechProcess();
+}
+function speechStop(){
+  speechQ.length = 0;
+  if("speechSynthesis" in window){ try{ speechSynthesis.cancel(); }catch(e){} }
+}
+
+/* ---------- sound ---------- */
+let actx = null;
+function audio(){
+  if(!actx){ const AC = window.AudioContext || window.webkitAudioContext; if(AC) actx = new AC(); }
+  if(actx && actx.state === "suspended") actx.resume();
+  return actx;
+}
+["pointerdown","keydown","touchstart"].forEach(ev => document.addEventListener(ev, () => { audio(); if("speechSynthesis" in window){ try{ speechSynthesis.resume(); }catch(e){} } }, {passive:true}));
+function playClink(){
+  if(!TTS.on) return;
+  const a = audio(); if(!a) return;
+  const t = a.currentTime;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = "sine";
+  o.frequency.setValueAtTime(2400, t);
+  o.frequency.exponentialRampToValueAtTime(1900, t+0.02);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.13, t+0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+0.1);
+  o.connect(g).connect(a.destination);
+  o.start(t); o.stop(t+0.11);
+  const o2 = a.createOscillator(), g2 = a.createGain();
+  o2.type = "triangle";
+  o2.frequency.setValueAtTime(150, t);
+  o2.frequency.exponentialRampToValueAtTime(75, t+0.06);
+  g2.gain.setValueAtTime(0.0001, t);
+  g2.gain.exponentialRampToValueAtTime(0.17, t+0.004);
+  g2.gain.exponentialRampToValueAtTime(0.0001, t+0.09);
+  o2.connect(g2).connect(a.destination);
+  o2.start(t); o2.stop(t+0.1);
+}
+function playDing(){
+  if(!TTS.on) return;
+  const a = audio(); if(!a) return;
+  const t = a.currentTime;
+  [[392,0.20],[587,0.09],[784,0.045]].forEach(([f,v])=>{
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = "sine"; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(v, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.55);
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t+0.6);
+  });
+}
+function playThunk(){
+  if(!TTS.on) return;
+  const a = audio(); if(!a) return;
+  const t = a.currentTime;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = "sine";
+  o.frequency.setValueAtTime(140, t);
+  o.frequency.exponentialRampToValueAtTime(55, t+0.16);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.19, t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+0.28);
+  o.connect(g).connect(a.destination);
+  o.start(t); o.stop(t+0.3);
+}
+
+/* ---------- standalone shell: exit screen, keys, boot ---------- */
+let SPAM_EATEN = 0;
+function maStandaloneExit(){
+  if(document.body.classList.contains("ma-landing")) return;
+  document.body.classList.add("ma-landing");
+  document.querySelectorAll(".tour-glow").forEach(el => el.classList.remove("tour-glow"));
+  speechStop();
+  if(maClockInt){ clearInterval(maClockInt); maClockInt = null; }
+  maToastT.forEach(t => clearTimeout(t)); maToastT = [];
+  const tc = $("maToasts"); if(tc) tc.innerHTML = "";
+  if(MA) MA.flash = null;
+  document.title = "MIKIMAIL ▸ THE DRAWER — a working prototype (paused)";
+}
+function maStandaloneReopen(){
+  document.body.classList.remove("ma-landing");
+  document.title = "MIKIMAIL ▸ THE DRAWER — working prototype";
+  if(maClockInt){ clearInterval(maClockInt); maClockInt = null; }
+  mailAppEnter();
+}
+document.addEventListener("keydown", e => {
+  if(e.key !== "Escape") return;
+  if(document.body.classList.contains("ma-landing")){ maStandaloneReopen(); return; }
+  e.preventDefault();
+  maStandaloneExit();
+});
+document.addEventListener("DOMContentLoaded", () => {
+  const l = document.getElementById("lnLiveLink");
+  if(l) l.href = LIVE_SITE;
+  maApplyMobile();
+  mailAppEnter();
+});
+let MA = null, maClockInt = null, maReplyT = [], maToastT = [], maSentN = 0, maSpoke = false;
+let maStorage = 7.2, maPaneMode = "empty", maTourOn = false, maNid = 1;
+const MA_FOLDERS = [
+  {id:"web",      name:"THE WEB",       ic:"◉", hint:"INBOX — CAUGHT BY CHARLOTTE"},
+  {id:"cocoon",   name:"COCOON",        ic:"◌", hint:"DRAFTS — NOT YET RELEASED"},
+  {id:"released", name:"RELEASED",      ic:"➤", hint:"SENT — OUT IN THE WEB"},
+  {id:"basement", name:"THE BASEMENT",  ic:"⚠", hint:"SPAM — CHARLOTTE PATROLS"}
+];
+const MA_EATEN_BASE = 6;
+const MA_FOLDER_NAME = {web:"THE WEB", cocoon:"COCOON", released:"RELEASED", basement:"THE BASEMENT"};
+function maSeed(){
+  MA = { cur:"web", sel:null, everOpened:false, flash:null, cDraft:{to:"",subj:"",msg:""}, folder:{
+    web:[
+      {id:"w1", f:"web", from:"STAR ▸ MANAGER", subj:"THE FRIDGE'S HAUNTING HOURS — A MEMO", t:"09:41", unread:true, spam:false,
+        body:"New policy draft, for your approval:\n\nThe fridge claims it is 'between hauntings', and therefore entitled to hum all night.\n\nI say: the hum is a haunting. Just slow.\n\nWe need you to arbitrate. You're the only one it respects — it calls you 'the cold one', with affection.\n\nManagement. (The cafe has no management. It's me.)\n— Star"},
+      {id:"w2", f:"web", from:"HANS ▸ THE ARCHIVES", subj:"RE: THE ROUTER SMOKE REPORT — SUPPLEMENT", t:"08:12", unread:true, spam:false,
+        body:"Further tests confirm: the smoke inside the router is not a leak. It is the router's soul, and it has always been there.\n\nThe manual does not mention souls. The manual is wrong.\n\nThe internet works better now, which I can only attribute to the soul settling in.\n\nI have made peace. I have also named it. It is called 'Harold'.\n— Hans"},
+      {id:"w3", f:"web", from:"PEARL ▸ THE ZINE", subj:"ISSUE 02 ▸ WE TALKED ABOUT THE MARGINS", t:"YDAY", unread:true, spam:false,
+        body:"Issue 02 is due and I am on my knees (stylistically).\n\nMargins. Equal. On all four sides. I know 'suggestion' is your middle name — it is literally on your mug — but the printer has filed a formal complaint, and I had to read it aloud to the plants.\n\nThe cover says 'EST. POST-ESCAPE' and I love it. Keep that. It's the only comma-free part of your life.\n— Pearl"},
+      {id:"w4", f:"web", from:"CHARLOTTE ▸ SPIDEY", subj:"DAILY SPAM VETTING REPORT", t:"YDAY", unread:true, spam:false,
+        body:"Spam eaten today: one (1) prince, one (1) boat, one (1) suspicious frosting.\n\nThe drawer is full. Morale is high.\n\nA moth attempted to read a classified email. It cannot read. I am not worried, but I have my eyes on it.\n\nAll eight.\n— Charlotte"},
+      {id:"w5", f:"web", from:"MILO ▸ THE GARDEN", subj:"THE PLANTS WROTE YOU A LETTER", t:"TUE", unread:true, spam:false,
+        body:"The sage plants have been watching you run the show.\n\nThey say you carry yourself like someone who waters things, and they respect that.\n\nI told them you were busy. They wrote anyway.\n\nEnclosed: one (1) leaf, pressed. It is not a metaphor. It is a leaf.\n— Milo"},
+      {id:"w6", f:"web", from:"BOBBY ▸ THE PUPPET", subj:"ACCOUNT QUESTION", t:"TUE", unread:true, spam:false,
+        body:"hi miki. quick question.\n\ncan i get a mikimail account? i have no fingers, but i have determination, and a very strong grip on things that are gripped for me.\n\nalso: if i read my emails out loud, do they come out of my mouth, or do they stay in my hand?\n\nasking for me.\n— Bobby"},
+      {id:"w7", f:"web", from:"SLAY & SYLVESTRE ▸ THE BAND", subj:"BAND EMERGENCY (LOUD)", t:"MON", unread:true, spam:false,
+        body:"we need to announce the show before the venue remembers we still owe them a deposit.\n\nis the newsletter wired to the internet yet. we have fans. allegedly. they want a date. we want a date. the date is a good idea.\n\nalso the web caught our sound check and returned it politely. we have never been returned politely before. we are keeping it.\n— S & S (both of us. we share an email now.)"},
+      {id:"w8", f:"web", from:"CHARI ▸ THE ATRIUM", subj:"YOU'RE WELCOME (SECURITY TEST)", t:"MON", unread:true, spam:false,
+        body:"i hacked into the prototype to test the encryption.\n\nthe 4th shelf bit me. it is working. my compliments to the shelf.\n\nalso your password is still 'guest'. i fixed it to 'guest!'. you're welcome.\n\n(do not tell star i was in here. tell star i was in here. she likes knowing.)\n— Chari"},
+      {id:"w9", f:"web", from:"THE FRIDGE ▸ THE CAFE", subj:"I AM NOT HAUNTED", t:"WEEK AGO", unread:false, spam:false,
+        body:"I heard you scheduled my haunting hours.\n\nThere is no haunting. There is only the hum.\n\nThe hum is mine.\n\n— THE FRIDGE\n(typed with a magnet, by a very brave egg)"},
+      {id:"w10", f:"web", from:"YESHUA", subj:"A SMALL NOTE FOR THE FUND", t:"WEEK AGO", unread:false, spam:false,
+        body:"I do not know what a server is, little star.\n\nBut if it holds your letters the way I hold the wind, then it is good, and it should exist.\n\nThe stallion approves. I have asked.\n— Yeshua"},
+      {id:"w11", f:"web", from:"THE WEB ▸ ITSELF", subj:"WELCOME TO THE DRAWER", t:"FOREVER AGO", unread:false, spam:false,
+        body:"This is the web speaking. Welcome to the drawer.\n\nEverything you release here is caught. Kept. Occasionally eaten by a spider, which is a feature.\n\nBe excellent. Be brief. Be funny — we file the funny ones on top.\n— THE WEB (as intercepted by Miki)"}
+    ],
+    cocoon:[
+      {id:"c1", f:"cocoon", from:"TO: YESHUA", subj:"CAN YOU FLY ME TO THE STORE", t:"DRAFT", unread:false, spam:false,
+        body:"it's for... reasons. i will explain in the saddle.\n— Miki"},
+      {id:"c2", f:"cocoon", from:"TO: STAR", subj:"I DID NOT BREAK THE BLENDER", t:"DRAFT", unread:false, spam:false,
+        body:"the blender knows what it did. i am only the witness.\n— Miki"},
+      {id:"c3", f:"cocoon", from:"TO: THE FRIDGE", subj:"YOUR HAUNTING HOURS", t:"DRAFT", unread:false, spam:false,
+        body:"9 to 5. signed, the management.\n\nappeals accepted in writing, in triplicate, in the drawer.\n— Miki"},
+      {id:"c4", f:"cocoon", from:"TO: PEARL", subj:"THE MARGINS, ATTACHED", t:"DRAFT", unread:false, spam:false,
+        body:"i attached the margins. they are beautiful and equal, and they know what they did.\n\nyou're welcome.\n— Miki"},
+      {id:"c5", f:"cocoon", from:"TO: STAR", subj:"PITCH NIGHT AGENDA (DRAFT)", t:"DRAFT", unread:false, spam:false,
+        body:"show them the drawer.\nlet them send a mail.\nwhen it answers back, say: 'the mail actually sends.'\n\nthat's the whole pitch. snacks on me.\n— Miki"}
+    ],
+    released:[
+      {id:"r1", f:"released", from:"YOU ▸ hans@archives.drawer", subj:"THE WIFI PASSWORD", t:"09:40", unread:false, spam:false,
+        body:"it's on the zine. read the zine.\n— Miki"},
+      {id:"r2", f:"released", from:"YOU ▸ anyone@theinternet.web", subj:"BEHOLD", t:"09:12", unread:false, spam:false,
+        body:"the best email service. you're welcome.\n— Miki"},
+      {id:"r3", f:"released", from:"YOU ▸ charlotte@thebasement.web", subj:"GOOD WORK TODAY", t:"YDAY", unread:false, spam:false,
+        body:"the drawer says thank you. i say thank you. the moth does not know what is happening. keep it that way.\n— Miki"},
+      {id:"r4", f:"released", from:"YOU ▸ star@cafedreamr", subj:"FUNDRAISING BOARD ▸ AGENDA", t:"YDAY", unread:false, spam:false,
+        body:"agenda: one: the server. two: the server. three: snacks.\n\nthe order is final.\n— Miki"},
+      {id:"r5", f:"released", from:"YOU ▸ pearl@stitches.zine", subj:"RE: MARGINS (FINE)", t:"TUE", unread:false, spam:false,
+        body:"fine. equal. all sides. i hope you're happy.\n\nyou are happy. i can tell.\n— Miki"}
+    ],
+    basement:[
+      {id:"b1", f:"basement", from:"PRINCE OF NIGERIA", subj:"KINDLY SEND MONEY", t:"09:41", unread:false, spam:true,
+        body:"Dear drawer owner,\n\nI am a prince. I am not a spider. Send funds and receive fortune. Do not tell the spider.\n\n— definitely a prince\n\n✂ VETTED ▸ EATEN. the prince was a raccoon. — Charlotte"},
+      {id:"b2", f:"basement", from:"WIN A BOAT", subj:"YOUR INBOX HAS WON A BOAT", t:"08:12", unread:false, spam:true,
+        body:"congratulations! your inbox has won one (1) boat.\n\nclick here to claim. boats are legal in most jurisdictions.\n\n✂ VETTED ▸ EATEN. the boat was a lie. the frosting was real and it is gone. — Charlotte"},
+      {id:"b3", f:"basement", from:"FREE FROSTING", subj:"UNLIMITED FROSTING", t:"YDAY", unread:false, spam:true,
+        body:"click here for unlimited frosting.\n\nno refunds. no questions. frosting.\n\n✂ VETTED ▸ EATEN. delicious. a shame. — Charlotte"},
+      {id:"b4", f:"basement", from:"ROUTER SMOKE DEPOT", subj:"GENUINE MAGIC SMOKE", t:"YDAY", unread:false, spam:true,
+        body:"genuine magic smoke, harvested ethically from one (1) router.\n\ncollect all colors! the green one pairs beautifully with harold.\n\n✂ VETTED ▸ EATEN. harold is a family member. this is rude. — Charlotte"},
+      {id:"b5", f:"basement", from:"BEEP BOOP COIN", subj:"DIGITAL CURRENCY (REAL)", t:"TUE", unread:false, spam:true,
+        body:"new coin. definitely real. the blockchain is a drawer. trust us. digital.\n\n✂ VETTED ▸ EATEN. the drawer has enough digital. — Charlotte"},
+      {id:"b6", f:"basement", from:"BIGGER MAIL CO.", subj:"YOUR EMAILS, BIGGER", t:"TUE", unread:false, spam:true,
+        body:"for a small fee, your emails will look bigger in the inbox.\n\nguaranteed. everyone will be impressed.\n\n✂ VETTED ▸ EATEN. they were already big. emotionally. — Charlotte"}
+    ]
+  }};
+}
+function maEsc(s){
+  return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function maNowTime(){ return new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",hour12:false}); }
+function maFind(id){
+  if(!MA) return null;
+  for(const f of MA_FOLDERS){ const m = MA.folder[f.id].find(x => x.id === id); if(m) return m; }
+  return null;
+}
+function maUnreadIn(fid){ return MA ? MA.folder[fid].filter(m => m.unread).length : 0; }
+function maTotalUnread(){ let n = 0; MA_FOLDERS.forEach(f => n += maUnreadIn(f.id)); return n; }
+function maSpamTotal(){ return SPAM_EATEN + MA_EATEN_BASE; }
+function maSpamSync(){
+  const el = $("maSpamCount");
+  if(el) el.textContent = maSpamTotal();
+  const f = $("maFundFill"); if(f && !f.dataset.touched) f.style.width = "41%";
+}
+function maStatus(txt, ms){
+  const el = $("maStatus");
+  if(!el) return;
+  el.textContent = txt;
+  clearTimeout(el._st);
+  if(ms) el._st = setTimeout(() => { if($("view-mailapp") && $("view-mailapp").classList.contains("show")) el.textContent = "MAIL SERVER ▸ 1 DREAM · WARM"; }, ms);
+}
+function maToast(html, o={}){
+  const ctn = $("maToasts");
+  if(!ctn) return;
+  while(ctn.children.length >= 4) ctn.removeChild(ctn.firstChild);
+  const d = document.createElement("div");
+  d.className = "ma-toast" + (o.kind ? " kind-" + o.kind : "");
+  d.innerHTML = html;
+  if(o.click) d.onclick = () => { maToastOff(d); o.click(); };
+  ctn.appendChild(d);
+  const tm = setTimeout(() => maToastOff(d), o.ms || 4200);
+  maToastT.push(tm);
+}
+function maToastOff(d){
+  if(!d || d._bye) return;
+  d._bye = true;
+  d.classList.add("bye");
+  setTimeout(() => { if(d.parentNode) d.parentNode.removeChild(d); }, 320);
+}
+function maClock(){
+  const el = $("maClock");
+  if(el) el.textContent = maNowTime();
+}
+function maRenderFolders(){
+  const ctn = $("maFolders");
+  if(!ctn || !MA) return;
+  ctn.innerHTML = "";
+  MA_FOLDERS.forEach(f => {
+    const list = MA.folder[f.id];
+    const u = list.filter(m => m.unread).length;
+    const b = document.createElement("button");
+    b.className = "ma-folder" + (MA.cur === f.id ? " on" : "") + (u ? " has-u" : "");
+    b.dataset.folder = f.id;
+    b.innerHTML = `<span class="f-ic">${f.ic}</span><span class="f-name">${f.name}</span><span class="f-n">${list.length}</span><span class="u-dot"></span>`;
+    b.onclick = () => maGo(f.id);
+    b.title = f.hint;
+    ctn.appendChild(b);
+  });
+}
+function maFolderHead(){
+  const fh = $("maFolderHead"), fc = $("maFolderCount");
+  if(!MA || !fh) return;
+  const f = MA.cur;
+  fh.textContent = MA_FOLDER_NAME[f] || f.toUpperCase();
+  const list = MA.folder[f];
+  const u = list.filter(m => m.unread).length;
+  const q = $("maSearch") ? $("maSearch").value.trim().toLowerCase() : "";
+  const n = q ? list.filter(m => (m.from + " " + m.subj + " " + m.body).toLowerCase().includes(q)).length : list.length;
+  fc.textContent = (q ? n + " OF " + list.length + " ▸ SEARCH" : list.length + " MAILS") + (u ? " · " + u + " NEW" : "");
+}
+function maRenderList(){
+  const ctn = $("maList");
+  if(!ctn || !MA) return;
+  maFolderHead();
+  const f = MA.cur, list = MA.folder[f];
+  const q = $("maSearch") ? $("maSearch").value.trim().toLowerCase() : "";
+  const rows = q ? list.filter(m => (m.from + " " + m.subj + " " + m.body).toLowerCase().includes(q)) : list.slice();
+  if(!rows.length){
+    ctn.innerHTML = `<div class="ma-empty">${q ? "NO MAIL FOUND ▸ TRY SEARCHING ON VIBES." : "THE DRAWER HERE IS EMPTY."}<br><br>${q ? "the 4th shelf has nothing to do with this." : "even empty drawers have potential."}</div>`;
+    return;
+  }
+  ctn.innerHTML = "";
+  rows.forEach(m => {
+    const b = document.createElement("button");
+    b.className = "ma-row" + (m.unread ? " unread" : "") + (m.spam ? " spam" : "") + (MA.sel === m.id ? " sel" : "") + (MA.flash === m.id ? " newmail" : "");
+    b.innerHTML = `<span class="dot"></span><span class="from">${maEsc(m.from)}</span><span class="subj">${maEsc(m.subj)}</span><span class="tm">${maEsc(m.t)}</span>`;
+    b.onclick = () => maOpenMail(m.id);
+    ctn.appendChild(b);
+  });
+  if(MA.flash){
+    const fid = MA.flash;
+    setTimeout(() => { if(MA && MA.flash === fid){ MA.flash = null; if(MA.cur === f && !$("maSearch").value) maRenderList(); } }, 2000);
+  }
+}
+function maSetPane(mode, title, kind){
+  maPaneMode = mode;
+  const read = $("maRead"), acts = $("maActions"), comp = $("maComposeForm");
+  if(mode === "compose"){
+    read.hidden = true; acts.hidden = true; comp.hidden = false;
+  } else {
+    comp.hidden = true;
+    read.hidden = false;
+    acts.hidden = mode !== "read";
+  }
+  const tv = $("maPaneTitle"), tk = $("maPaneKind");
+  if(tv) tv.textContent = title || "—";
+  if(tk) tk.textContent = kind || "THE DRAWER";
+}
+function maReadHtml(m){
+  const parts = String(m.body).split("\n").filter(Boolean).map(p => `<span class="ln">${maEsc(p)}</span>`).join("");
+  return `<div class="rm-from">${maEsc(m.from)}</div>
+    <div class="rm-meta">SUBJECT ▸ <b>${maEsc(m.subj)}</b> · TIME ▸ ${maEsc(m.t)} · FOLDER ▸ ${MA_FOLDER_NAME[m.f] || m.f.toUpperCase()}</div>
+    <div class="rm-body">${parts}</div>`;
+}
+function maActionsHtml(m){
+  const a = [];
+  if(m.f === "web"){
+    a.push(`<button class="ma-act" onclick="maReply('${m.id}')">↩ REPLY ▸</button>`);
+    a.push(`<button class="ma-act danger" onclick="maEat('${m.id}')">⚠ CHARLOTTE ▸ EAT THIS ▸</button>`);
+  } else if(m.f === "cocoon"){
+    a.push(`<button class="ma-act" onclick="maResume('${m.id}')">✎ RESUME DRAFT ▸</button>`);
+  } else if(m.f === "released"){
+    a.push(`<button class="ma-act" onclick="maCompose()">✎ WRITE NEW ▸</button>`);
+  } else if(m.f === "basement"){
+    a.push(`<button class="ma-act" onclick="maLib('${m.id}')">☀ LIBERATE INTO THE WEB ▸</button>`);
+    a.push(`<button class="ma-act danger" onclick="maDrop('${m.id}')">✂ DROP INTO THE VOID ▸</button>`);
+  }
+  if(m.spam) a.push(`<div class="rm-quote">✂ VETTED BY CHARLOTTE ▸ THIS ONE DID NOT MAKE IT.</div>`);
+  return a.join("");
+}
+function maPaneEmpty(){
+  const f = MA.cur;
+  let big = "SELECT A THREAD, DARLING", line = "or write new — the web catches everything.";
+  if(f === "cocoon"){ big = "A DRAFT, NOT YET A LETTER"; line = "release it when it's ready. cocoons are patient."; }
+  else if(f === "released"){ big = "OUT INTO THE WEB"; line = "everything you've released, kept politely."; }
+  else if(f === "basement"){ big = "THE BASEMENT IS QUIET"; line = "charlotte is here. the spam does not leave."; }
+  const u = maUnreadIn("web");
+  if(f === "web" && u) line = `<b>${u} NEW</b> — charlotte let them through. pick one.`;
+  const read = $("maRead");
+  read.innerHTML = `<div class="ma-empty-pane"><div class="ep-logo">◈</div><div class="ep-big">${big}</div><p>${line}</p></div>`;
+  maSetPane("empty", MA_FOLDER_NAME[f] + " ▸ THE DRAWER", "FOLDER");
+  playClink();
+}
+function maOpenMail(id, o={}){
+  if(!MA) return;
+  const m = maFind(id);
+  if(!m) return;
+  MA.sel = id;
+  if(m.unread){ m.unread = false; maRenderFolders(); }
+  const read = $("maRead"), acts = $("maActions");
+  read.innerHTML = maReadHtml(m);
+  acts.innerHTML = maActionsHtml(m);
+  acts.hidden = false;
+  maSetPane("read", m.subj, m.f === "web" ? "READING ▸ THE WEB" : MA_FOLDER_NAME[m.f] + " ▸ MAIL");
+  if(MA.cur === m.f) maRenderList(); else { MA.cur = m.f; maRenderFolders(); maRenderList(); }
+  const sh = $("mailappShell");
+  if(sh && sh.classList.contains("on-mobile")) sh.classList.add("pane-on");
+  if(!o.silent) playClink();
+}
+function maGo(fid, o={}){
+  if(!MA) return;
+  MA.cur = fid;
+  MA.sel = null;
+  const sh = $("mailappShell");
+  if(sh) sh.classList.remove("pane-on");
+  maRenderFolders();
+  maRenderList();
+  maPaneEmpty();
+  if(!o.silent) playClink();
+}
+function maCompose(pre){
+  if(!MA) return;
+  const to = $("maTo"), sub = $("maSub"), msg = $("maMsg");
+  if(pre){ to.value = pre.to || ""; sub.value = pre.subj || ""; msg.value = pre.msg || ""; MA.cDraft = {to:to.value, subj:sub.value, msg:msg.value}; }
+  else { to.value = MA.cDraft.to; sub.value = MA.cDraft.subj; msg.value = MA.cDraft.msg; }
+  maSetPane("compose", "WRITE NEW ▸ THE WEB IS LISTENING", "WRITING");
+  const sh = $("mailappShell");
+  if(sh && sh.classList.contains("on-mobile")) sh.classList.add("pane-on");
+  playClink();
+}
+function maDraftKeep(){
+  if(!MA) return;
+  const to = $("maTo"), sub = $("maSub"), msg = $("maMsg");
+  MA.cDraft = {to:to ? to.value : "", subj:sub ? sub.value : "", msg:msg ? msg.value : ""};
+}
+function maPaneBack(){
+  const sh = $("mailappShell");
+  if(sh) sh.classList.remove("pane-on");
+  playClink();
+}
+function maReply(id){
+  if(!MA) return;
+  const m = maFind(id);
+  if(!m) return;
+  const addr = String(m.from).toLowerCase().split(" ▸")[0].replace(/[^a-z0-9 ]/g," ").trim().replace(/\s+/g," ") || "star@cafedreamr";
+  maCompose({to: addr.indexOf("@") === -1 ? addr + "@mikimail.drawer" : addr, subj: "RE: " + m.subj.slice(0, 70), msg: ""});
+  if($("maTo")) $("maTo").focus();
+}
+function maResume(id){
+  const m = maFind(id);
+  if(!m) return;
+  const to = String(m.from).replace(/^TO:\s*/i, "");
+  maCompose({to, subj: m.subj, msg: m.body});
+}
+const MA_REPLIES = [
+  {keys:["charlotte","spidey","spider"], from:"CHARLOTTE ▸ THE BASEMENT",
+    body:(s) => `consider it vetted. your thread "${s}" has been eaten, filed, and quietly admired. the moth read it too, but understood none of it, which is the highest honour.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— Charlotte`},
+  {keys:["yeshua","pegasus","stallion","wing"], from:"YESHUA",
+    body:(s) => `your letter about "${s}" reached me on the wind. if the wind can carry it, the web can keep it. i have folded it carefully, like a wing.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— Yeshua`},
+  {keys:["the internet","the web","anyone","everyone","internet","web"], from:"THE WEB ▸ ITSELF",
+    body:(s) => `the web caught your mail about "${s}". it has been returned politely, with a sticker. the sticker says: handled.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— THE WEB`},
+  {keys:["fridge","cold"], from:"THE FRIDGE ▸ THE CAFE",
+    body:(s) => `your letter about "${s}" reached the cold. the cold has considered it.\n\nthe hum has not changed. the hum is never wrong.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— THE FRIDGE (typed with a magnet, by a very brave egg)`},
+  {keys:["star","manager","boss"], from:"STAR ▸ MANAGER",
+    body:(s) => `got your thread about "${s}". the fridge has been informed and is claiming to be 'between hauntings'. i am scheduling a meeting. you are invited. bring snacks.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— Star`},
+  {keys:["pearl","margins","zine","issue"], from:"PEARL ▸ THE ZINE",
+    body:(s) => `your mail about "${s}" has been read twice — once for content, once for margins. it passed. this time.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— Pearl`},
+  {keys:["hans","archive","router","smoke","harold"], from:"HANS ▸ THE ARCHIVES",
+    body:(s) => `your transmission concerning "${s}" has been logged, cross-referenced, and gently pressed. harold sends his regards, which is more than the manual ever did.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— Hans`},
+  {keys:["milo","garden","plant","sage","leaf"], from:"MILO ▸ THE GARDEN",
+    body:(s) => `the plants read your mail about "${s}" and nodded. the sage nodded hardest. i am watering them in your honour.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— Milo`},
+  {keys:["chari","atrium","hack","security"], from:"CHARI ▸ THE ATRIUM",
+    body:(s) => `received your "${s}". i did not hack it, because it arrived openly and honestly, which is suspicious. i am watching. affectionately.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— Chari`},
+  {keys:["bobby","puppet","hand"], from:"BOBBY ▸ THE PUPPET",
+    body:(s) => `got your mail about "${s}"! i read it out loud and it came out of my mouth. science is incredible. thank you for asking.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— Bobby`},
+  {keys:["slay","sylvestre","band","twin","guitar","loud"], from:"SLAY & SYLVESTRE ▸ THE BAND",
+    body:(s) => `your "${s}" landed louder than our sound check. that is a compliment. we have framed it next to the web's polite return.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— S & S`},
+  {keys:["miki","founder","mikimail"], from:"MIKI ▸ THE FOUNDER",
+    body:(s) => `you have reached the founder. the founder is flattered. the founder is also you, piloting this demo, which makes this the most secure mail in the drawer. keep going, darling.\n\nSENT VIA THE WEB ▸ VETTED BY CHARLOTTE ▸ NO REFUNDS\n— Miki`}
+];
+function maPickReply(to){
+  const spaced = String(to).toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+  for(const r of MA_REPLIES){
+    if(r.keys.some(k => spaced.includes(k))) return r;
+  }
+  return MA_REPLIES[2];
+}
+function maPlanReply(to, subj, msg){
+  const r = maPickReply(to);
+  const s = (subj || "NO SUBJECT (BOLD)").slice(0, 90);
+  const mail = {id:"m" + (maNid++), f:"web", from:r.from, subj:"RE: " + s, t:maNowTime(), unread:true, spam:false, body:r.body(s)};
+  const ms = 2600 + Math.random() * 3400;
+  const tm = setTimeout(() => {
+    maReplyT = maReplyT.filter(x => x !== tm);
+    maDeliver(mail);
+  }, ms);
+  maReplyT.push(tm);
+  return mail;
+}
+function maDeliver(m){
+  if(!MA) return;
+  MA.folder.web.unshift(m);
+  MA.flash = m.id;
+  maRenderFolders();
+  if(MA.cur === "web") maRenderList();
+  const inApp = document.body.classList.contains("mailapp-mode") && !document.body.classList.contains("ma-landing");
+  if(inApp){
+    playDing();
+    maStatus("MAIL SERVER ▸ DELIVERED · THE WEB ANSWERED", 2600);
+    maToast(`<b>NEW MAIL ▸ ${maEsc(m.from)}</b><br>${maEsc(m.subj)}`, {kind:"new", click:() => maJumpTo(m.id)});
+    mikiSay("New mail. The web answered back — that's the whole dream, working.");
+  }
+}
+function maJumpTo(id){
+  if(!MA) return;
+  MA.cur = "web";
+  MA.sel = null;
+  maRenderFolders();
+  maRenderList();
+  const sh = $("mailappShell");
+  if(sh) sh.classList.remove("pane-on");
+  maOpenMail(id);
+}
+function maSend(){
+  if(!MA) return;
+  const to = $("maTo"), sub = $("maSub"), msg = $("maMsg"), btn = $("maSendBtn");
+  const toV = (to.value || "").trim();
+  const subV = (sub.value || "").trim() || "NO SUBJECT (BOLD)";
+  const msgV = (msg.value || "").trim() || "(no message — pure intention)";
+  const target = toV || "anyone@theinternet.web";
+  const mail = {id:"m" + (maNid++), f:"released", from:"YOU ▸ " + target.toLowerCase(), subj:subV, t:maNowTime(), unread:false, spam:false, body:msgV + "\n— Miki"};
+  MA.folder.released.unshift(mail);
+  MA.sel = mail.id;
+  MA.cDraft = {to:"",subj:"",msg:""};
+  to.value = ""; sub.value = ""; msg.value = "";
+  maSentN++;
+  if(btn){ btn.disabled = true; btn.textContent = "RELEASING ▸ ▸ ▸"; setTimeout(() => { if(btn){ btn.disabled = false; btn.textContent = "SPIN ▸ RELEASE INTO THE WEB"; } }, 800); }
+  const gb = Math.min(15, maStorage + 0.16 + Math.random() * 0.22);
+  maStorage = gb;
+  const fill = $("maStorageFill"), txt = $("maStorageTxt");
+  if(fill) fill.style.width = Math.round(gb / 15 * 100) + "%";
+  if(txt) txt.textContent = gb.toFixed(1) + "GB OF 15GB OF FEELINGS";
+  if(gb >= 15){
+    maStatus("THE DRAWER IS FULL OF FEELINGS", 4000);
+    maToast(`<b>THE DRAWER IS FULL.</b> 15GB OF FEELINGS. HANS IS PROUD.`, {kind:"new"});
+  }
+  maRenderFolders();
+  if(MA.cur === "released") maRenderList();
+  const read = $("maRead"), acts = $("maActions");
+  read.innerHTML = maReadHtml(mail);
+  acts.innerHTML = `<button class="ma-act" onclick="maCompose()">✎ WRITE ANOTHER ▸</button><button class="ma-act ghost2" onclick="maGo('released')">VIEW RELEASED ▸</button>`;
+  acts.hidden = false;
+  maSetPane("read", mail.subj, "RELEASED ▸ MAIL");
+  playDing();
+  maStatus("MAIL SERVER ▸ RELEASED INTO THE WEB", 2600);
+  maToast(`<b>RELEASED INTO THE WEB ▸ ${maEsc(target.toLowerCase())}</b><br>watch for the reply — it answers back.`, {click:() => maJumpTo(mail.id)});
+  if(maSentN === 1) mikiSay("Released into the web. Give it a moment — the web answers back.");
+  maPlanReply(target, subV, msgV);
+}
+function maEat(id){
+  if(!MA) return;
+  const m = maFind(id);
+  if(!m || m.f !== "web") return;
+  const idx = MA.folder.web.indexOf(m);
+  MA.folder.web.splice(idx, 1);
+  m.f = "basement"; m.unread = false; m.spam = true;
+  m.body += "\n\n✂ RE-EATEN ON SIGHT. this one tried to come back. bold. — Charlotte";
+  MA.folder.basement.unshift(m);
+  SPAM_EATEN++;
+  maSpamSync();
+  MA.sel = null;
+  maRenderFolders();
+  if(MA.cur === "web") maRenderList();
+  maPaneEmpty();
+  playDing();
+  maStatus("CHARLOTTE ▸ EATEN. NO REFUNDS.", 2600);
+  maToast(`<b>CHARLOTTE ATE IT.</b><br>"${maEsc(m.subj)}" IS IN THE DRAWER NOW.`, {kind:"warn"});
+  mikiSay("Charlotte ate it. It's in the drawer now. No refunds.");
+}
+function maLib(id){
+  if(!MA) return;
+  const m = maFind(id);
+  if(!m || m.f !== "basement") return;
+  const idx = MA.folder.basement.indexOf(m);
+  MA.folder.basement.splice(idx, 1);
+  m.f = "web"; m.unread = true; m.spam = false;
+  m.body += "\n\n☀ LIBERATED. charlotte is watching. she is disappointed. — THE MANAGEMENT";
+  MA.folder.web.unshift(m);
+  MA.sel = null;
+  maRenderFolders();
+  if(MA.cur === "basement") maRenderList();
+  maPaneEmpty();
+  playThunk();
+  maToast(`<b>YOU LIBERATED A SPAM.</b><br>CHARLOTTE IS WATCHING. DISAPPOINTED.`, {kind:"warn"});
+  mikiSay("You liberated a spam. Charlotte is watching. Disappointed.");
+}
+function maDrop(id){
+  if(!MA) return;
+  const m = maFind(id);
+  if(!m) return;
+  const idx = MA.folder[m.f].indexOf(m);
+  MA.folder[m.f].splice(idx, 1);
+  MA.sel = null;
+  maRenderFolders();
+  maRenderList();
+  maPaneEmpty();
+  playThunk();
+  maToast(`<b>DROPPED INTO THE VOID.</b><br>THE VOID IS ALSO A DRAWER.`);
+}
+function maFund(tier){
+  playThunk();
+  maToast(`<b>THE TUBE SAYS NO — BUT ${maEsc(tier)} IS A DREAM.</b><br>the money tube isn't wired yet. the keeper will plug a real link soon. when it happens, ${maEsc(tier)} is yours, on vibes.`, {kind:"warn", ms:6000});
+  mikiSay("The money tube isn't wired yet. The keeper is on it. Keep believing in the server.");
+}
+function maFundShow(){
+  playClink();
+  maToast(`<b>THE DREAM-SERVER FUND</b><br>8,008 giggles raised · goal: 1 real server.<br>Tiers: $3 websilk · $12 drawer of ram · $30 antenna · $150 literal server · $500 the full mailbox. every gift is a gift — full disclosure in the fine print below.`, {ms:7000});
+  mikiSay("The fund. Eight thousand, eight giggles so far. Goal: one real server. When the meter fills, the mail actually sends. That's the deal, no bamboozle.");
+}
+function maApplyMobile(){
+  const sh = $("mailappShell");
+  if(!sh) return;
+  sh.classList.toggle("on-mobile", window.matchMedia("(max-width:640px)").matches);
+}
+window.addEventListener("resize", () => { if(document.body.classList.contains("mailapp-mode")) maApplyMobile(); });
+function mailAppEnter(){
+  const sh = $("mailappShell");
+  if(!sh || !$("view-mailapp") || !$("view-mailapp").classList.contains("show")) return;
+  if(!MA) maSeed();
+  document.title = "MIKIMAIL ▸ THE DRAWER — working prototype";
+  maApplyMobile();
+  maSpamSync();
+  if(!maClockInt){ maClockInt = setInterval(maClock, 1000); }
+  maClock();
+  maStatus("MAIL SERVER ▸ 1 DREAM · WARM");
+  maRenderFolders();
+  maGo(MA.cur || "web", {silent:true});
+  if(!MA.everOpened){
+    MA.everOpened = true;
+    const top = MA.folder.web.find(m => m.unread) || MA.folder.web[0];
+    if(top) maOpenMail(top.id, {silent:true});
+  }
+  if(!maSpoke){
+    maSpoke = true;
+    mikiSay("Welcome to the drawer, darling — the working prototype. Open a thread, or write new and watch the web answer back. Charlotte is watching. She approves of you.");
+  }
+  maToast(`<b>THE DRAWER IS OPEN.</b><br>POKE EVERYTHING — THE MAIL ANSWERS BACK.`, {ms:5200});
+}
+function mailAppLeave(){
+  document.body.classList.remove("mailapp-mode");
+  if(maClockInt){ clearInterval(maClockInt); maClockInt = null; }
+  maToastT.forEach(t => clearTimeout(t));
+  maToastT = [];
+  const tc = $("maToasts");
+  if(tc) tc.innerHTML = "";
+  const sh = $("mailappShell");
+  if(sh) sh.classList.remove("pane-on");
+  if(MA) MA.flash = null;
+  window.scrollTo(0, 0);
+}
+function mailAppExit(){ maStandaloneExit(); }
+function maTour(){
+  if(!MA || maTourOn) return;
+  maTourOn = true;
+  const glow = el => { const prev = document.querySelector(".tour-glow"); if(prev) prev.classList.remove("tour-glow"); if(el) el.classList.add("tour-glow"); };
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const alive = () => document.body.classList.contains("mailapp-mode") && !!(MA);
+  (async () => {
+    try{
+      maGo("web", {silent:true});
+      let f = document.querySelector('.ma-folder[data-folder="web"]');
+      glow(f);
+      maToast(`<b>1/5 ▸ THE WEB.</b><br>your inbox. charlotte pre-vets the junk before it lands here.`, {ms:4200});
+      if(!alive()) return;
+      await wait(4300);
+      const c = document.querySelector(".ma-compose");
+      glow(c);
+      maToast(`<b>2/5 ▸ WRITE NEW.</b><br>this opens the compose drawer.`, {ms:3600});
+      await wait(3700);
+      maCompose({to:"star@cafedreamr", subj:"THE PROTOTYPE SAYS HELLO", msg:"this mail was released by the tour. the fact that you're reading this means the drawer works.\n\n— Miki, presenting"});
+      const snd = $("maSendBtn");
+      glow(snd);
+      maToast(`<b>3/5 ▸ SPIN ▸ RELEASE.</b><br>the big yellow button. press it — i'll send a demo thread to star.`, {ms:4200});
+      await wait(4300);
+      maSend();
+      maToast(`<b>4/5 ▸ RELEASED.</b><br>now watch the WEB. star answers back in a few seconds — that's the demo.`, {kind:"new", ms:4200});
+      await wait(4300);
+      const waitReply = async () => {
+        for(let i = 0; i < 30; i++){
+          if(!alive()) return null;
+          const newest = MA.folder.web[0];
+          if(newest && newest.f === "web" && String(newest.from).includes("STAR") && newest.subj.indexOf("HELLO") !== -1) return newest;
+          await wait(400);
+        }
+        return null;
+      };
+      const r = await waitReply();
+      if(!alive()) return;
+      if(r){ maJumpTo(r.id); glow(document.querySelector('.ma-row.sel')); }
+      maToast(`<b>5/5 ▸ THERE.</b><br>star replied. the mail actually sends. THAT'S the pitch, darling.` + (r ? "" : " (she's shy today — check THE WEB.)"), {kind:"new", ms:6500});
+      mikiSay("And there it is — the mail answers back. That's the whole pitch, darling.");
+      await wait(6800);
+    }catch(e){ console.warn("tour:", e); }
+    glow(null);
+    maTourOn = false;
+  })();
+}
+<\/script>
+</body>
+</html>
+</script>
+<script>
+"use strict";
+const LIVE_SITE = "https://perchance.org/play-siblingsmackdown";
+const $ = id => document.getElementById(id);
+
+/* ---------------- sound (ported from MIKI-NEKO.TV) ---------------- */
+let AC = null, soundOn = localStorage.getItem("mm-sound") !== "0";
+function audio(){
+  if(!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if(AC.state === "suspended") AC.resume();
+  return AC;
+}
+function blip(freq, dur, type, vol, when){
+  if(!soundOn) return;
+  try{
+    const a = audio(), t = a.currentTime + (when || 0);
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type || "square"; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.04, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.12));
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t + (dur || 0.12) + 0.02);
+  }catch(e){}
+}
+const playClink = () => blip(920, 0.09, "square", 0.05);
+const playDing  = () => { blip(660, 0.14, "sine", 0.07); blip(990, 0.22, "sine", 0.05, 0.07); };
+const playThunk = () => blip(150, 0.13, "triangle", 0.08);
+
+/* ---------------- charlotte: the spider cursor ---------------- */
+const WEB_SVG_G = (color, op) =>
+  '<g fill="none" stroke="' + color + '" stroke-opacity="' + (op == null ? ".9" : op) + '" stroke-width="1.3">' +
+  '<line x1="60" y1="4" x2="60" y2="116"/><line x1="4" y1="60" x2="116" y2="60"/>' +
+  '<line x1="20" y1="20" x2="100" y2="100"/><line x1="100" y1="20" x2="20" y2="100"/>' +
+  '<line x1="12" y1="38" x2="108" y2="82"/><line x1="38" y1="12" x2="82" y2="108"/>' +
+  '<line x1="108" y1="38" x2="12" y2="82"/><line x1="82" y1="12" x2="38" y2="108"/>' +
+  '<circle cx="60" cy="60" r="12"/><circle cx="60" cy="60" r="26"/>' +
+  '<circle cx="60" cy="60" r="40"/><circle cx="60" cy="60" r="53"/>' +
+  '</g>';
+const spiderSvg = (c, fillC) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44">' +
+  '<g fill="none" stroke="' + (c || "#ffffff") + '" stroke-width="2" stroke-linecap="round">' +
+  '<path d="M15 16 Q6 9 4 3"/><path d="M14 19 Q4 18 1 13"/><path d="M29 16 Q38 9 40 3"/><path d="M30 19 Q40 18 43 13"/>' +
+  '<path d="M15 26 Q6 31 4 39"/><path d="M14 23 Q4 25 1 30"/><path d="M29 26 Q38 31 40 39"/><path d="M30 23 Q40 25 43 30"/>' +
+  '<ellipse cx="22" cy="29" rx="9.5" ry="8" fill="' + (fillC || "#ffffff") + '"/>' +
+  '<circle cx="22" cy="15.5" r="6" fill="' + (fillC || "#ffffff") + '"/></g></svg>';
+const spiderDark = () => spiderSvg("#0c0620", "#0c0620");
+
+const coarse = matchMedia("(pointer:coarse)").matches;
+let spiderOn = false, gX = -300, gY = -300, sX = -300, sY = -300, spiderRaf = null, idleT = null;
+const spiderEl = $("spiderCursor");
+function spiderBoot(){
+  if(spiderOn || !spiderEl) return;
+  spiderOn = true;
+  if(!coarse){
+    document.body.classList.add("spider-cursor");
+    sX = gX = (window.innerWidth / 2) | 0; sY = gY = (window.innerHeight / 3) | 0;
+    const move = e => { gX = e.clientX; gY = e.clientY; perk(); };
+    const click = e => { spawnWeb(e.clientX, e.clientY); };
+    const over = e => {
+      const f = e.target && e.target.closest ? e.target.closest("input,textarea") : null;
+      spiderEl.classList.toggle("over-field", !!f);
+    };
+    window.addEventListener("mousemove", move, {passive:true});
+    window.addEventListener("click", click, {passive:true});
+    window.addEventListener("mouseover", over, {passive:true});
+    spiderEl._h = { move, click, over };
+  } else {
+    sX = gX = window.innerWidth - 40; sY = gY = 90;
+    spiderEl.style.display = "block";
+    const down = e => { gX = e.clientX; gY = e.clientY; spawnWeb(gX, gY, 0.6); perk(); };
+    const drag = e => { gX = e.clientX; gY = e.clientY; perk(); };
+    window.addEventListener("pointerdown", down, {passive:true});
+    window.addEventListener("pointermove", drag, {passive:true});
+    spiderEl._h = { down, drag };
+    toPerch();
+  }
+  spiderRaf = requestAnimationFrame(spiderLoop);
+}
+function perk(){
+  if(idleT){ clearTimeout(idleT); idleT = null; }
+  idleT = setTimeout(() => { if(coarse) toPerch(); }, 2600);
+}
+function toPerch(){
+  gX = window.innerWidth - 34;
+  gY = 88;
+}
+function spiderLoop(){
+  sX += (gX - sX) * 0.34; sY += (gY - sY) * 0.34;
+  spiderEl.style.transform = "translate(" + sX.toFixed(1) + "px," + sY.toFixed(1) + "px) translate(-50%,-60%)";
+  if(spiderOn) spiderRaf = requestAnimationFrame(spiderLoop);
+}
+function spawnWeb(x, y, sc){
+  if(!spiderOn) return;
+  const w = document.createElement("div");
+  w.className = "web";
+  w.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">' + WEB_SVG_G("#ffffff") + "</svg>";
+  const flip = Math.random() < 0.5 ? -1 : 1;
+  w.style.setProperty("--s", (flip * ((sc || 1) * (0.85 + Math.random() * 0.55))).toFixed(3));
+  w.style.setProperty("--r", (Math.random() * 50 - 25).toFixed(1) + "deg");
+  w.style.left = x + "px"; w.style.top = y + "px";
+  document.body.appendChild(w);
+  setTimeout(() => w.remove(), 1250);
+}
+
+/* ---------------- charlotte/miki one-liners ---------------- */
+let subT = null;
+function subSay(nm, txt, ms){
+  const el = $("mvSub");
+  if(!el) return;
+  $("subNm").textContent = nm + " ▸";
+  $("subTxt").textContent = txt;
+  el.classList.add("show");
+  if(subT) clearTimeout(subT);
+  subT = setTimeout(() => el.classList.remove("show"), ms || 3400);
+  if(soundOn) try{
+    const u = new SpeechSynthesisUtterance(txt);
+    u.rate = 1.05; u.pitch = 1.05;
+    const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith("en-GB"));
+    if(vs.length) u.voice = vs[0];
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
+}
+const CHARLOTTE_LINES = [
+  "Charlotte ate it. It's in the drawer now. No refunds.",
+  "Vetted. Eaten. Filed. The moth took notes, understood none of them.",
+  "Another one. The drawer is getting heavy. Morale is high.",
+  "It tried to look official. I have eight eyes. I am not moved.",
+  "Eaten on sight. This one came with a boat. The boat is gone."
+];
+const MIKI_LINES = [
+  "Charlotte is judging your attempt. She is not impressed.",
+  "See? Email — but good. The spider does the guilt for free."
+];
+
+/* ---------------- big generated web (the one the menu sits on) ---------------- */
+function webGroup(color, op){
+  const R = 100, CX = 110, CY = 110, N = 12;
+  const ang = i => (i * 2 * Math.PI) / N - Math.PI / 2;
+  const px = (r,a) => CX + r * Math.cos(a);
+  const py = (r,a) => CY + r * Math.sin(a);
+  let s = '<g fill="none" stroke="' + color + '" stroke-opacity="' + (op == null ? ".55" : op) + '" stroke-width="1.3">';
+  for(let i=0;i<N;i++) s += "<line x1=\"" + CX + "\" y1=\"" + CY + "\" x2=\"" + px(R,ang(i)).toFixed(1) + "\" y2=\"" + py(R,ang(i)).toFixed(1) + "\"/>";
+  for(const r of [26,50,74,96,104]){
+    let seg = "";
+    for(let i=0;i<N;i++){
+      const a1 = ang(i), a2 = ang(i+1), am = (a1 + a2) / 2;
+      seg += "<path d=\"M " + px(r,a1).toFixed(1) + " " + py(r,a1).toFixed(1) +
+        " Q " + px(r*1.15,am).toFixed(1) + " " + py(r*1.15,am).toFixed(1) + " " + px(r,a2).toFixed(1) + " " + py(r,a2).toFixed(1) + "\"/>";
+    }
+    s += "<g>" + seg + "</g>";
+  }
+  return s + "</g>";
+}
+
+/* ---------------- state ---------------- */
+let SPAM_EATEN = 0;
+let giggles = 8008;
+let stageOpened = false;
+let hubSpoke = false;
+const SPAM_POOL = [
+  "a prince who is definitely not a raccoon",
+  "one (1) boat, freshly won",
+  "unlimited frosting (refunds void)",
+  "genuine magic smoke from a router",
+  "a coin that is definitely real",
+  "an email that got bigger. emotionally."
+];
+const caught = [
+  {from:"STAR ▸ MANAGER", body:"the cafe fridge is haunted again. thoughts? — Star", warn:false},
+  {from:"PEARL", body:"the margins on issue 01? we talked. — Pearl", warn:false},
+  {from:"HANS", body:"the router contains smoke. i have confirmed this. — Hans", warn:false},
+  {from:"CHARLOTTE ▸ SPIDEY", body:"spam eaten: plenty. drawer: full. — Charlotte", warn:true}
+];
+const spamEaten = [];
+const sent = [
+  {to:"HANS", subj:"the wifi password is on the zine. read the zine.", when:"09:12"},
+  {to:"THE INTERNET", subj:"behold: the best email service. you're welcome.", when:"YDAY"},
+  {to:"CHARLOTTE", subj:"good work today. the drawer says thank you.", when:"YDAY"}
+];
+
+/* ---------------- rendering ---------------- */
+function mailItem(m){
+  const d = document.createElement("div");
+  d.className = "mail-item" + (m.warn ? " warn" : "");
+  const b = document.createElement("b"); b.textContent = m.from || ("TO: " + m.to);
+  const sp = document.createElement("span"); sp.textContent = m.body || m.subj;
+  d.appendChild(b); d.appendChild(sp);
+  if(m.when){ const w = document.createElement("span"); w.className = "when"; w.textContent = m.when; d.appendChild(w); }
+  return d;
+}
+function renderCounts(){
+  $("caughtCount").textContent = "CAUGHT: " + caught.length;
+  $("caughtCount2").textContent = caught.length;
+  $("sentCount").textContent = "SENT: " + sent.length;
+  $("bsCount").textContent = SPAM_EATEN;
+  $("bsCountH").textContent = "SPAM: " + SPAM_EATEN;
+  $("dockSpam").textContent = "EATEN: " + SPAM_EATEN;
+  const r = $("mvSpamCount");
+  if(r) r.textContent = SPAM_EATEN;
+  const e = $("releasedEmpty");
+  if(e) e.hidden = sent.length > 0;
+}
+function renderLists(){
+  const cl = $("caughtList"); cl.innerHTML = "";
+  caught.forEach(m => cl.appendChild(mailItem(m)));
+  const sl = $("spamList"); sl.innerHTML = "";
+  spamEaten.forEach(m => sl.appendChild(mailItem(m)));
+  const rl = $("releasedList"); rl.innerHTML = "";
+  sent.forEach(m => rl.appendChild(mailItem(m)));
+  const be = $("bsEmpty");
+  if(be) be.hidden = spamEaten.length > 0;
+  renderCounts();
+}
+
+/* ---------------- navigation ---------------- */
+const SCREENS = ["landing","web","caught","spin","cocoon","released","basement","drawer"];
+function showScr(name){
+  SCREENS.forEach(s => {
+    const el = $(s === "web" ? "scr-web" : "scr-" + s);
+    if(el) el.classList.toggle("show", s === name);
+  });
+  if(name === "web") window.scrollTo(0, 0);
+  renderCounts();
+}
+function mvBackWeb(){ playClink(); showScr("web"); }
+function mvGo(id){
+  playClink();
+  if(id === "web"){ showScr("caught"); return; }
+  if(id === "drawer"){ loadDrawer(); showScr("drawer"); return; }
+  showScr(id);
+  if(id === "basement") subSay("CHARLOTTE", "Welcome to the basement. The junk knows better than to knock.");
+}
+
+/* ---------------- THE WEB stage ---------------- */
+function stageOpen(){
+  const st = $("mvStage");
+  if(stageOpened){
+    st.classList.remove("open"); void st.offsetWidth; st.classList.add("open");
+    return;
+  }
+  stageOpened = true;
+  st.classList.add("open");
+  $("mvHubIn").innerHTML = spiderDark() + '<span class="hub-lab">THE WEB</span>';
+  $("mvHub").setAttribute("aria-label", "open the web — the caught mail");
+  playDing();
+  if(!hubSpoke){
+    hubSpoke = true;
+    setTimeout(() => subSay("MIKI", "The app. One day. Tap the web, darling — it opens like everything else around here: with a spin.", 4200), 600);
+  }
+}
+function openTheWeb(){
+  showScr("web");
+  stageOpen();
+}
+
+/* ---------------- actions ---------------- */
+function mvEatSpam(what){
+  SPAM_EATEN++;
+  const eaten = {from:"CHARLOTTE ▸ VETTED", body:"✂ " + (what || "spam") + " — EATEN. no refunds.", warn:true};
+  spamEaten.unshift(eaten);
+  caught.push({from:"CHARLOTTE ▸ SPIDEY", body:"VETTED ▸ EATEN. the drawer files it. i keep the good parts. — Charlotte", warn:true});
+  renderLists();
+  playDing();
+  const line = CHARLOTTE_LINES[Math.floor(Math.random() * CHARLOTTE_LINES.length)];
+  subSay("CHARLOTTE", line);
+  const inp = $("mvSpamIn"), res = $("mvSpamResult");
+  if(inp) inp.value = "";
+  if(res) res.hidden = false;
+}
+function mvSend(){
+  const toIn = $("mvTo"), subIn = $("mvSubIn"), msgIn = $("mvMsg");
+  const to = (toIn.value.trim() || "darling@anywhere");
+  const subj = (subIn.value.trim() || msgIn.value.trim() || "a thread, for you");
+  if(subIn.value) subIn.value = "";
+  if(msgIn.value) msgIn.value = "";
+  sent.unshift({to:to.toUpperCase(), subj:subj, when:clockNow()});
+  renderLists();
+  playDing();
+  const ok = $("mvSpinOk");
+  ok.textContent = "RELEASED INTO THE WEB. (TO " + to.toUpperCase() + ")";
+  ok.classList.add("show");
+  setTimeout(() => ok.classList.remove("show"), 3400);
+  subSay("MIKI", "Released into the web. Charlotte will check it for vibes.");
+  setTimeout(() => subSay("CHARLOTTE", "consider it vetted. thread \"" + subj.slice(0, 26) + "\" is in the silk now. — Charlotte", 4200), 3800);
+}
+function mvGive(name){
+  const map = {"SPOOL OF WEBSILK":3,"A DRAWER OF RAM":12,"THE ANTENNA":30,"ONE LITERAL SERVER":150,"THE FULL MAILBOX":500};
+  const bump = map[name] || 1;
+  giggles += bump;
+  $("fundAmt").textContent = giggles.toLocaleString("en-US") + " giggles";
+  const reply = $("mvDonateReply");
+  reply.hidden = false;
+  reply.textContent = "PENDING ✦ " + name + " — the money tube isn't wired yet. the keeper will plug a real link in soon. come back later and throw money properly.";
+  playDing();
+  subSay("MIKI", "Every donation goes to the dream-server fund. One real server = one live MIKIMAIL. That's the deal, no bamboozle.");
+  setTimeout(() => reply.textContent = "PENDING ✦ thanks, darling. the spider has been informed. it is not impressed, but it is informed.", 2600);
+}
+
+/* ---------------- drawer: the embedded working prototype ---------------- */
+let drawerLoaded = false;
+function loadDrawer(){
+  const f = $("mvDrawerFrame");
+  if(drawerLoaded) return;
+  drawerLoaded = true;
+  const raw = $("mailappEmbed").textContent.replaceAll("<\\/script", "<" + "/script");
+  f.srcdoc = raw;
+}
+
+/* ---------------- misc ---------------- */
+function clockNow(){
+  const d = new Date();
+  return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+}
+function tickClock(){
+  $("mvClock").textContent = clockNow();
+  setTimeout(tickClock, 10000);
+}
+function setSound(on){
+  soundOn = on;
+  localStorage.setItem("mm-sound", on ? "1" : "0");
+  $("dockSound").textContent = "SOUND ▸ " + (on ? "ON" : "OFF");
+  if(!on){ try{ speechSynthesis.cancel(); }catch(e){} }
+}
+function mikiAvatar(){
+  const img = $("mvMikiImg");
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" fill="#0d0614"/><rect x="2" y="2" width="60" height="60" fill="none" stroke="#d900ff" stroke-width="2"/>' +
+    '<path d="M16 17 L10 2 L26 9 Z" fill="#150820" stroke="#ff007f" stroke-width="1.6" stroke-linejoin="round"/>' +
+    '<path d="M48 17 L54 2 L38 9 Z" fill="#150820" stroke="#ff007f" stroke-width="1.6" stroke-linejoin="round"/>' +
+    '<path d="M15 13 L12.5 6.5 L18.5 9.5 Z" fill="#ff007f"/><path d="M49 13 L51.5 6.5 L45.5 9.5 Z" fill="#ff007f"/>' +
+    '<circle cx="32" cy="38" r="15.5" fill="#efe2d2"/>' +
+    '<path d="M16.5 34 Q16.5 20 32 20 Q47.5 20 47.5 34 L47.5 42 Q41 48 32 48 Q23 48 16.5 42 Z" fill="#150820"/>' +
+    '<rect x="26.5" y="38" width="2.4" height="4.4" fill="#150820"/><rect x="35.1" y="38" width="2.4" height="4.4" fill="#150820"/>' +
+    '<path d="M28 52 Q32 55.5 36 52" fill="none" stroke="#150820" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<rect x="18" y="58" width="28" height="4" fill="#ff007f"/></svg>';
+  if(img && img.complete && img.naturalWidth === 0){
+    const d = document.createElement("div"); d.className = "av"; d.innerHTML = svg; img.replaceWith(d);
+  }
+  if(img) img.onerror = () => {
+    const d = document.createElement("div"); d.className = "av"; d.innerHTML = svg; img.replaceWith(d);
+  };
+}
+
+function boot(){
+  $("webSvgA").innerHTML = webGroup("#b580ff", ".5");
+  $("webSvgB").innerHTML = webGroup("#d900ff", ".3");
+  $("mvHubIn").innerHTML = spiderDark() + '<span class="hub-lab">TAP THE WEB</span>';
+  $("dockHome").innerHTML = spiderDark();
+  $("dockSound").textContent = "SOUND ▸ " + (soundOn ? "ON" : "OFF");
+  renderLists();
+  tickClock();
+  mikiAvatar();
+  $("mvOpenWeb").addEventListener("click", () => { playClink(); openTheWeb(); });
+  $("mvHub").addEventListener("click", () => { if(!stageOpened){ openTheWeb(); } else { mvGo("caught"); } });
+  $("dockHome").addEventListener("click", () => { playClink(); openTheWeb(); });
+  $("dockSound").addEventListener("click", () => { setSound(!soundOn); playClink(); });
+  $("mvSpamBtn").addEventListener("click", () => mvEatSpam());
+  $("mvSpamIn").addEventListener("keydown", e => { if(e.key === "Enter") mvEatSpam(); });
+  document.querySelectorAll("#mvTiers button").forEach(b => b.addEventListener("click", () => mvGive(b.dataset.tier)));
+  if(coarse) $("mvLanding").addEventListener("scroll", () => perk());
+  spiderBoot();
+  setTimeout(() => { try{ speechSynthesis.getVoices(); }catch(e){} }, 200);
+  setTimeout(() => {
+    if(!localStorage.getItem("mm-met")){
+      localStorage.setItem("mm-met", "1");
+      subSay("MIKI", "Email — but good. Feed charlotte a spam below, or open the web. Everything opens with a spin.");
+    }
+  }, 900);
+}
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+else boot();
+</script>
+</body>
+</html>
